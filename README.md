@@ -1,2 +1,2 @@
 # travelStats
-Compute statistics using Google Maps API
+Compute statistics for traveling in LA using Google Maps API
