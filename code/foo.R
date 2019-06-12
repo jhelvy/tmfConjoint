@@ -9,6 +9,8 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 source(here('code', 'functions.R'))
 
 # -----------------------------------------------------------------------------
+# Useful links:
+
 # mapsapi:
 # https://cran.rstudio.com/web/packages/mapsapi/vignettes/intro.html
 
@@ -18,20 +20,30 @@ source(here('code', 'functions.R'))
 # Metro map:
 # https://upload.wikimedia.org/wikipedia/commons/f/fd/Los_Angeles_County_Metro_Rail_and_Metro_Liner_map.svg
 
+# -----------------------------------------------------------------------------
+# Define regions and travel modes:
+
 # Regions defined from economic development zones:
 # https://laedc.org/wtc/chooselacounty/regions-of-la-county/
-locations <- data.frame(
-    origin = c('Lancaster, CA',                   # Antelope Valley
-               'Central LA, Los Angeles, CA',     # Central Los Angeles
-               'Paramount, California',           # Gateway Cities
-               'San Fernando Valley, California', # San Fernando Valley
-               'El Monte, California',            # San Gabriel Valley
-               'Santa Clarita, CA',               # Santa Clarita Valley
-               'South Bay, California',           # South Bay
-               'Culver City, California'),        # Westside
-    destination = c('Los Angeles, CA')
-)
+
+origin <- c(
+    'Lancaster, CA',                   # Antelope Valley
+    'Central LA, Los Angeles, CA',     # Central Los Angeles
+    'Paramount, California',           # Gateway Cities
+    'San Fernando Valley, California', # San Fernando Valley
+    'El Monte, California',            # San Gabriel Valley
+    'Santa Clarita, CA',               # Santa Clarita Valley
+    'South Bay, California',           # South Bay
+    'Culver City, California')         # Westside
+
 modes <- c('driving', 'transit', 'walking', 'bicycling')
+
+inputs <- expand.grid(origin, modes) %>%
+    mutate(destination = 'Los Angeles, CA') %>%
+    select(origin=Var1, destination, mode=Var2)
+
+# -----------------------------------------------------------------------------
+# Get list of directions for each combination of origin, destination, and mode
 
 directions = mp_directions(
     origin       = as.character(locations$origin[1]),
