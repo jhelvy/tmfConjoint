@@ -1,2 +1,3 @@
-# travelStats
-Compute statistics for traveling in LA using Google Maps API
+# tmfConjoint
+
+Survey design work for LA transit conjoint survey
