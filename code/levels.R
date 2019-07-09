@@ -8,20 +8,55 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 source(file.path('code', 'functions.R'))
 
 # -----------------------------------------------------------------------------
+# Mode-specific designs
 
-# Attributes & Levels
-mode_price <- c(
-    'Bus ($1)', 'Bus ($3)', 'Bus ($5)', 'Bus ($9)', # Bus fare
-    'Car ($5)', 'Car ($10)', 'Car ($15)', 'Car ($20)', 'Car ($30)', # Parking + Gas
-    'Uber / Lyft ($10)', 'Uber / Lyft ($15)', 'Uber / Lyft ($20)', 'Uber / Lyft ($30)', # Travel fare
-    'Scooter / Bicycle ($1.50)', 'Scooter / Bicycle ($3.00)', 'Scooter / Bicycle ($5.00)', # Rental fare
-    'Walk')
-leg_travel_time     <- c(10, 15, 20, 30, 45, 60) # Minutes
-leg_travel_time_unc <- c(0, 10, 20, 30, 40) # Percentage of time
-num_transfers       <- c(0, 1, 2, 3)
-transfer_wait_time  <- c(5, 10, 15, 20, 30) # Minutes
+car <- expand.grid(
+    price           = c(5, 10, 15, 20, 30), # USD $ Parking + Gas
+    travel_time     = c(10, 15, 20, 30, 45, 60), # Minutes
+    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
+)
 
-fullFactorial <- expand.grid(
-    mode_price, leg_travel_time, leg_travel_time_unc, num_transfers, 
-    transfer_wait_time)
+bus <- expand.grid(
+    price              = c(1, 3, 5, 9), # USD $ ticket fare
+    travel_time        = c(20, 30, 45, 60, 75, 90), # Minutes
+    travel_time_unc    = c(0, 10, 20, 30, 40), # Percentage of time
+    num_transfers      = c(0, 1, 2, 3),
+    transfer_wait_time = c(5, 10, 15, 20, 30) # Minutes
+)
 
+rideHail <- expand.grid(
+    price           = c(10, 15, 20, 30), # USD $ Travel fare
+    travel_time     = c(10, 15, 20, 30, 45, 60), # Minutes
+    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
+)
+
+roll <- expand.grid(
+    price           = c(1.50, 3.00, 5.00), # USD $ Rental fare
+    travel_time     = c(5, 10, 15, 20), # Minutes
+    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
+)
+
+walk <- expand.grid(
+    travel_time     = c(5, 10, 15, 20), # Minutes
+    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
+)
+
+# -----------------------------------------------------------------------------
+# Public vs. Private designs
+
+private <- expand.grid(
+    mode        = c('Drive', 'Uber / Lyft'),
+    price       = c(5, 10, 15, 20, 30), # USD $ Parking + Gas OR Ride Fare
+    rideTime    = c(10, 15, 20, 30, 45, 60), # Minutes
+    rideTimeUnc = c(0, 10, 20, 30) # Percentage of time
+)
+
+public <- expand.grid(
+    price        = c(1, 3, 5, 9), # USD $ ticket fare
+    rideTime     = c(20, 30, 45, 60, 75, 90), # Minutes
+    rideTimeUnc  = c(0, 10, 20, 30, 40), # Percentage of time
+    numTransfers = c(0, 1, 2),
+    lastMileMode = c('Walk', 'Scooter / Bike ($1.50)',
+                     'Scooter / Bike ($3.00)', 'Scooter / Bike ($5.00)'),
+    lastMileTime = c(5, 10, 15) # Minutes
+)
