@@ -60,3 +60,20 @@ public <- expand.grid(
                      'Scooter / Bike ($3.00)', 'Scooter / Bike ($5.00)'),
     lastMileTime = c(5, 10, 15) # Minutes
 )
+
+# -----------------------------------------------------------------------------
+# Full factorial
+
+ff <- expand.grid(
+    car_price_drive  = c(10, 15, 20, 30), # USD $ Parking + Gas
+    car_price_uber   = c(10, 15, 20, 30), # Ride Fare
+    car_rideTime     = c(1, 2, 3, 4), # Level (defined by map)
+    car_rideTimeUnc  = c(0, 10, 20), # Percentage of time
+    bus_price        = c(1, 3, 5, 9), # USD $ ticket fare
+    bus_rideTime     = c(1, 2, 3, 4), # Level (defined by map)
+    bus_rideTimeUnc  = c(0, 10, 20, 30), # Percentage of time
+    bus_numTransfers = c(0, 1, 2),
+    bus_lastMileMode = c('Walk', 'Scooter / Bike ($1.50)',
+                         'Scooter / Bike ($3.00)', 'Scooter / Bike ($5.00)'),
+    bus_lastMileTime = c(5, 10) # Minutes
+)
