@@ -2,11 +2,9 @@
 # Setup
 
 library(tidyverse)
-library(here)
-library(rvest)
 library(mapsapi)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
-source(here('code', 'functions.R'))
+source(file.path('code', 'functions.R'))
 
 # -----------------------------------------------------------------------------
 # Useful links:
