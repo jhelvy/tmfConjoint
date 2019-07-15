@@ -1,4 +1,4 @@
-library(ggplot2)
+library(tidyverse)
 
 # -----------------------------------------------------------------------------
 # Mode-specific designs
@@ -58,8 +58,8 @@ public <- expand.grid(
 # Full factorial
 
 ff1 <- expand.grid(
-    car_price_drive  = c(10, 15, 20, 30), # USD $ Parking + Gas
-    car_price_uber   = c(10, 15, 20, 30), # Ride Fare
+    car_price        = c(10, 15, 20, 30), # USD $ Parking + Gas
+    uber_price       = c(10, 15, 20, 30), # Ride Fare
     car_rideTime     = c(1, 2, 3, 4), # Level (defined by map)
     car_rideTimeUnc  = c(0, 10, 20), # Percentage of time
     bus_price        = c(1, 3, 5, 9), # USD $ ticket fare
@@ -83,24 +83,96 @@ ff2 <- expand.grid(
     bus_lastMileTime = c(5, 10) # Minutes
 )
 
+ff3 <- expand.grid(
+    car_price        = c(10, 20, 30), # USD $ Parking + Gas
+    car_rideTime     = c(1, 2, 3), # Level determined by map
+    car_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
+    uber_price       = c(10, 20, 30), # Ride Fare
+    uber_waitTime    = c(5, 10), # Additional wait time for total trip
+    uber_rideTimeUnc = c(0.05, 0.1, 0.2), # Percentage of time
+    bus_price        = c(2, 5, 8), # USD $ ticket fare
+    bus_rideTime     = c(1, 2, 3), # Level determined by map
+    bus_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
+    numTransfers     = c(0, 1, 2), # Number of bus transfers
+    lastMileTime     = c(5, 10) # Minutes
+)
+
 # -----------------------------------------------------------------------------
-# Make trip maps 
+# Make trip maps
 
-row <- ff2[1,]
+getPlotDf <- function(x) {return(data.frame(x = x, y = rep(1, length(x))))}
 
-getDf <- function(row) {
-    x = c(0, 1)
+getPlotX <- function(row) {
+    plotDf = getPlotDf0()
+    plotDf = data.frame(
+        type = c('car', 'car', 'uber', 'uber'),
+        x    = c(0, 1, 0, 1),
+        y    = c(1, 1, 1, 1)
+    )
     if (row$bus_numTransfers == 1) {
         x = c(0, 0.5, 1)
     } else if (row$bus_numTransfers == 2) {
         x = c(0, 0.33, 0.66, 1)
-    } 
-    return(data.frame(x = x, y = rep(1, length(x))))
+    }
+    plotDf = data.frame(x = x, y = rep(1, length(x)))
+    return(plotDf)
 }
 
-ggplot(getDf(row), 
+carTimes <- data.frame(
+    car_rideTime = seq(3),
+    car_time     = c(30, 45, 60)
+)
+busTimes <- data.frame(
+    bus_rideTime = seq(3),
+    bus_time     = c(45, 60, 75)
+)
+design <- ff3 %>%
+    left_join(carTimes) %>%
+    left_join(busTimes) %>%
+    mutate(
+        uber_time       = car_time + uber_waitTime,
+        car_time  = paste(
+            round(car_time*(1 - car_rideTimeUnc)), 'to',
+            round(car_time*(1 + car_rideTimeUnc)), 'minutes', sep=' '),
+        uber_time = paste(
+            round(uber_time*(1 - uber_rideTimeUnc)), 'to',
+            round(uber_time*(1 + uber_rideTimeUnc)), 'minutes', sep=' '),
+        bus_time = paste(
+            round(bus_time*(1 - bus_rideTimeUnc)), 'to',
+            round(bus_time*(1 + bus_rideTimeUnc)), 'minutes', sep=' '),
+        id = seq(n())) %>%
+    select(
+        id, lastMileTime, numTransfers, car_price, car_time, uber_price,
+        uber_time, bus_price, bus_time) %>%
+    gather(type, val, car_price:bus_time) %>%
+    separate(type, c('type', 'var'), sep='_') %>%
+    arrange(id) %>%
+    spread(var, val)
+
+i <- 13123
+row  <- filter(design, id == i)
+plotDf <- getPlotDf(row)
+carPlot <- ggplot(plotDf,
     aes(x = x, y = y)) +
-    geom_point(size=2) + 
-    geom_line() + 
-    theme_bw()
-    
+    geom_point(size=2) +
+    geom_line() +
+    theme_void()
+uberPlot <- ggplot(plotDf,
+    aes(x = x, y = y)) +
+    geom_point(size=2) +
+    geom_line() +
+    theme_void()
+busPlot <- ggplot(plotDf,
+    aes(x = x, y = y)) +
+    geom_point(size=2) +
+    geom_line() +
+    theme_void()
+
+
+
+ggplot(plotDf,
+    aes(x = x, y = y)) +
+    geom_point(size=2) +
+    geom_line() +
+    theme_void() +
+    facet_wrap(~type)
