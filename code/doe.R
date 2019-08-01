@@ -50,7 +50,8 @@ nQPerResp    <- 6 # Number of questions per respondent
 nRowsPerResp <- nAltsPerQ * nQPerResp
 nResp        <- nrow(doe) / nRowsPerResp # Number of respondents
 doe$respID   <- rep(seq(nResp), each=nRowsPerResp)
-doe$altID    <- rep(rep(seq(nQPerResp), each=nAltsPerQ), nResp)
+doe$qID      <- rep(rep(seq(nQPerResp), each=nAltsPerQ), nResp)
+doe$altID    <- rep(seq(nAltsPerQ), nResp*nQPerResp)
 doe$obsID    <- rep(seq(nResp * nQPerResp), each=nAltsPerQ)
 
 write_csv(doe, here::here('survey', 'survey_doe.csv'))
