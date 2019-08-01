@@ -7,3 +7,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+# This goes in the survey google sheet block for reading in the doe
+
+library(readr)
+doe <- read_csv('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/survey_doe.csv')

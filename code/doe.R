@@ -2,132 +2,38 @@ library(tidyverse)
 library(here)
 
 # -----------------------------------------------------------------------------
-# Mode-specific designs
+# Main DOE
 
-car <- expand.grid(
-    price           = c(5, 10, 15, 20, 30), # USD $ Parking + Gas
-    travel_time     = c(10, 15, 20, 30, 45, 60), # Minutes
-    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
-)
+trips1 <- expand.grid(
+    trip = c('Car', 'Uber/Lyft', 'Taxi', 'Bus'))
+trips2 <- expand.grid(
+    leg1 = c('Car', 'Uber/Lyft', 'Taxi', 'Bus'),
+    leg2 = 'Bus') %>%
+    mutate(trip = paste(leg1, leg2, sep=' | ')) %>%
+    select(trip)
+trips3 <- expand.grid(
+    leg1 = c('Car', 'Uber/Lyft', 'Taxi', 'Bus'),
+    leg2 = 'Bus',
+    leg3 = c('Uber/Lyft', 'Taxi', 'Bus')) %>%
+    mutate(trip = paste(leg1, leg2, leg3, sep=' | ') )%>%
+    select(trip)
+trip <- rbind(trips1, trips2, trips3)
+trip <- as.character(trip$trip)
 
-bus <- expand.grid(
-    price              = c(1, 3, 5, 9), # USD $ ticket fare
-    travel_time        = c(20, 30, 45, 60, 75, 90), # Minutes
-    travel_time_unc    = c(0, 10, 20, 30, 40), # Percentage of time
-    num_transfers      = c(0, 1, 2, 3),
-    transfer_wait_time = c(5, 10, 15, 20, 30) # Minutes
-)
-
-rideHail <- expand.grid(
-    price           = c(10, 15, 20, 30), # USD $ Travel fare
-    travel_time     = c(10, 15, 20, 30, 45, 60), # Minutes
-    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
-)
-
-roll <- expand.grid(
-    price           = c(1.50, 3.00, 5.00), # USD $ Rental fare
-    travel_time     = c(5, 10, 15, 20), # Minutes
-    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
-)
-
-walk <- expand.grid(
-    travel_time     = c(5, 10, 15, 20), # Minutes
-    travel_time_unc = c(0, 10, 20, 30, 40) # Percentage of time
-)
-
-# -----------------------------------------------------------------------------
-# Public vs. Private designs
-
-private <- expand.grid(
-    mode        = c('Drive', 'Uber / Lyft'),
-    price       = c(5, 10, 15, 20, 30), # USD $ Parking + Gas OR Ride Fare
-    rideTime    = c(10, 15, 20, 30, 45, 60), # Minutes
-    rideTimeUnc = c(0, 10, 20, 30) # Percentage of time
-)
-
-public <- expand.grid(
-    price        = c(1, 3, 5, 9), # USD $ ticket fare
-    rideTime     = c(20, 30, 45, 60, 75, 90), # Minutes
-    rideTimeUnc  = c(0, 10, 20, 30, 40), # Percentage of time
-    numTransfers = c(0, 1, 2),
-    lastMileMode = c('Walk', 'Scooter / Bike ($1.50)',
-                     'Scooter / Bike ($3.00)', 'Scooter / Bike ($5.00)'),
-    lastMileTime = c(5, 10, 15) # Minutes
-)
-
-# -----------------------------------------------------------------------------
-# Full factorial
-
-ff1 <- expand.grid(
-    car_price        = c(10, 15, 20, 30), # USD $ Parking + Gas
-    uber_price       = c(10, 15, 20, 30), # Ride Fare
-    car_rideTime     = c(1, 2, 3, 4), # Level (defined by map)
-    car_rideTimeUnc  = c(0, 10, 20), # Percentage of time
-    bus_price        = c(1, 3, 5, 9), # USD $ ticket fare
-    bus_rideTime     = c(1, 2, 3, 4), # Level (defined by map)
-    bus_rideTimeUnc  = c(0, 10, 20, 30), # Percentage of time
-    bus_numTransfers = c(0, 1, 2),
-    bus_lastMileMode = c('Walk', 'Scooter / Bike ($1.50)',
-                         'Scooter / Bike ($3.00)', 'Scooter / Bike ($5.00)'),
-    bus_lastMileTime = c(5, 10) # Minutes
-)
-
-ff2 <- expand.grid(
-    car_price_drive  = c(10, 20, 30), # USD $ Parking + Gas
-    car_price_uber   = c(10, 20, 30), # Ride Fare
-    car_rideTime     = c(1, 2, 3), # Level determined by map
-    car_rideTimeUnc  = c(0, 10, 20), # Percentage of time
-    bus_price        = c(2, 5, 8), # USD $ ticket fare
-    bus_rideTime     = c(1, 2, 3), # Level determined by map
-    bus_rideTimeUnc  = c(0, 10, 20), # Percentage of time
-    bus_numTransfers = c(0, 1, 2),
-    bus_lastMileTime = c(5, 10) # Minutes
-)
-
-ff3 <- expand.grid(
-    car_price        = c(10, 20, 30), # USD $ Parking + Gas
-    car_rideTime     = c(1, 2, 3), # Level determined by map
-    car_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
-    uber_price       = c(10, 20, 30), # Ride Fare
-    uber_waitTime    = c(5, 10), # Additional wait time for total trip
-    uber_rideTimeUnc = c(0.05, 0.1, 0.2), # Percentage of time
-    bus_price        = c(2, 5, 8), # USD $ ticket fare
-    bus_rideTime     = c(1, 2, 3), # Level determined by map
-    bus_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
-    numTransfers     = c(0, 1, 2), # Number of bus transfers
-    lastMileTime     = c(5, 10) # Minutes
+ff <- expand.grid(
+    trip         = trip,
+    price        = c(5, 10, 15, 20, 25, 30), # USD $
+    tripTime     = c(20, 30, 40, 50, 60, 70, 80), # Minutes for whole trip
+    tripTimeUnc  = c(0.05, 0.1, 0.2), # Plus/minus percentage of tripTime
+    walkTime     = c(5, 10, 15), # Minutes
+    taxiWaitTime = c(5, 10), # Minutes
+    busWaitTime  = c(5, 10) # Minutes
 )
 
 # -----------------------------------------------------------------------------
 # Translate full factorial into design for plotting
 
-carTimes <- data.frame(
-    car_rideTime = seq(3),
-    car_time     = c(30, 45, 60)
-)
-busTimes <- data.frame(
-    bus_rideTime = seq(3),
-    bus_time     = c(45, 60, 75)
-)
-
-ff <- expand.grid(
-    car_price        = c(10, 20, 30), # USD $ Parking + Gas
-    car_rideTime     = c(1, 2, 3), # Level determined by map
-    car_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
-    uber_price       = c(10, 20, 30), # Ride Fare
-    # uber_waitTime    = c(5, 10), # Additional wait time for total trip
-    uber_waitTime    = 5, # Additional wait time for total trip
-    uber_rideTimeUnc = c(0.05, 0.1, 0.2), # Percentage of time
-    bus_price        = c(2, 5, 8), # USD $ ticket fare
-    bus_rideTime     = c(1, 2, 3), # Level determined by map
-    bus_rideTimeUnc  = c(0.05, 0.1, 0.2), # Percentage of time
-    numTransfers     = c(0, 1, 2), # Number of bus transfers
-    lastMileTime     = c(5, 10) # Minutes
-)
-
 design <- ff %>%
-    left_join(carTimes) %>%
-    left_join(busTimes) %>%
     mutate(
         uber_time = car_time + uber_waitTime,
         car_time  = paste(
@@ -146,11 +52,11 @@ design <- ff %>%
     gather(type, val, car_price:bus_time) %>%
     separate(type, c('type', 'var'), sep='_') %>%
     arrange(id) %>%
-    spread(var, val) %>% 
+    spread(var, val) %>%
     select(id, type, price, time, lastMileTime, numTransfers)
 
-design %>% 
-    distinct(type, time) %>% 
+design %>%
+    distinct(type, time) %>%
     arrange(type, time)
 
 write_csv(design, here::here('survey', 'survey_doe.csv'))
@@ -161,8 +67,3 @@ write_csv(design, here::here('survey', 'survey_doe.csv'))
 
 
 
-
-# This goes in the survey google sheet block for reading in the doe
-
-library(readr)
-doe <- read_csv('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/survey_doe.csv')
