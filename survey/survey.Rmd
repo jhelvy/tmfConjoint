@@ -16,6 +16,5 @@ doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey
 id <- 1
 if (id > max(doe$respID)) {id <- id %% max(doe$respID)}
 
-doe <- doe[respID == id]
+doe <- doe[(respID == id) & (qID == 1)]
 ```
-
