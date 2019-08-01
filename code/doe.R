@@ -1,4 +1,5 @@
 library(tidyverse)
+library(here)
 
 # -----------------------------------------------------------------------------
 # Mode-specific designs
@@ -151,3 +152,5 @@ design <- ff %>%
 design %>% 
     distinct(type, time) %>% 
     arrange(type, time)
+
+write_csv(design, here::here('survey', 'survey_doe.csv'))
