@@ -154,3 +154,15 @@ design %>%
     arrange(type, time)
 
 write_csv(design, here::here('survey', 'survey_doe.csv'))
+
+
+
+
+
+
+
+
+# This goes in the survey google sheet block for reading in the doe
+
+library(readr)
+doe <- read_csv('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/survey_doe.csv')
