@@ -21,45 +21,39 @@ trip <- rbind(trips1, trips2, trips3)
 trip <- as.character(trip$trip)
 
 ff <- expand.grid(
-    trip         = trip,
-    price        = c(5, 10, 15, 20, 25, 30), # USD $
-    tripTime     = c(20, 30, 40, 50, 60, 70, 80), # Minutes for whole trip
-    tripTimeUnc  = c(0.05, 0.1, 0.2), # Plus/minus percentage of tripTime
-    walkTime     = c(5, 10, 15), # Minutes
-    taxiWaitTime = c(5, 10), # Minutes
-    busWaitTime  = c(5, 10) # Minutes
+    trip          = trip,
+    price         = c(10, 15, 20, 25, 30), # USD $
+    tripTime      = c(30, 40, 50, 60, 70), # Minutes for whole trip
+    tripTimeUnc   = c(0.05, 0.1, 0.2), # Plus/minus percentage of tripTime
+    walkTimeStart = c(0, 5, 10), # Minutes
+    walkTimeEnd   = c(0, 5, 10), # Minutes
+    taxiWaitTime  = c(5, 10), # Minutes
+    busWaitTime   = c(5, 10) # Minutes
 )
 
 # -----------------------------------------------------------------------------
 # Translate full factorial into design for plotting
 
-design <- ff %>%
+# Compute trip time range
+doe <- ff %>%
     mutate(
-        uber_time = car_time + uber_waitTime,
-        car_time  = paste(
-            round(car_time*(1 - car_rideTimeUnc)), 'to',
-            round(car_time*(1 + car_rideTimeUnc)), 'minutes', sep=' '),
-        uber_time = paste(
-            round(uber_time*(1 - uber_rideTimeUnc)), 'to',
-            round(uber_time*(1 + uber_rideTimeUnc)), 'minutes', sep=' '),
-        bus_time = paste(
-            round(bus_time*(1 - bus_rideTimeUnc)), 'to',
-            round(bus_time*(1 + bus_rideTimeUnc)), 'minutes', sep=' '),
-        id = seq(n())) %>%
-    select(
-        id, lastMileTime, numTransfers, car_price, car_time, uber_price,
-        uber_time, bus_price, bus_time) %>%
-    gather(type, val, car_price:bus_time) %>%
-    separate(type, c('type', 'var'), sep='_') %>%
-    arrange(id) %>%
-    spread(var, val) %>%
-    select(id, type, price, time, lastMileTime, numTransfers)
+        tripTimeRange  = paste(
+            round(tripTime*(1 - tripTimeUnc)), '-',
+            round(tripTime*(1 + tripTimeUnc)), 'minutes', sep=' '))
 
-design %>%
-    distinct(type, time) %>%
-    arrange(type, time)
+# Randomize design 
+doe <- doe[sample(x=seq(nrow(doe)), size=nrow(doe), replace=F),]
 
-write_csv(design, here::here('survey', 'survey_doe.csv'))
+# Set meta data
+nAltsPerQ    <- 3 # Number of alternatives per question
+nQPerResp    <- 6 # Number of questions per respondent
+nRowsPerResp <- nAltsPerQ * nQPerResp
+nResp        <- nrow(doe) / nRowsPerResp # Number of respondents
+doe$respID   <- rep(seq(nResp), each=nRowsPerResp)
+doe$altID    <- rep(rep(seq(nQPerResp), each=nAltsPerQ), nResp)
+doe$obsID    <- rep(seq(nResp * nQPerResp), each=nAltsPerQ)
+
+write_csv(doe, here::here('survey', 'survey_doe.csv'))
 
 
 
