@@ -1,3 +1,6 @@
+library(data.table)
+library(ggplot2)
+
 # -----------------------------------------------------------------------------
 # Functions for making trip images
 
@@ -21,7 +24,7 @@ getPlotDf <- function(trip) {
         x     = 0,
         y     = seq(0, 1, length.out = length(labels)),
         label = labels)
-    plotDf[, type := ifelse(label %in% c('Start', 'Transfer', 'End'), 
+    plotDf[, type := ifelse(label %in% c('Start', 'Transfer', 'End'),
                             'Node', 'Edge')]
     return(plotDf)
 }
@@ -42,8 +45,7 @@ makePlot <- function(trip) {
 
 # -----------------------------------------------------------------------------
 # Load the full design of experiment
-library(data.table)
-library(ggplot2)
+
 doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv')
 # doe <- fread('./survey/pilot1/doe.csv')
 

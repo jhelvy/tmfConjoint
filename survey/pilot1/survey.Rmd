@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # This goes in the survey google sheet block for reading in the doe
 
 ```{r}
-source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/load.R')
+source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/startup.R')
 
 # Filter out the respondent 
 doe <- doe[respID == respondentID]
