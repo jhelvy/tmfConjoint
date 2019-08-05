@@ -39,7 +39,9 @@ makePlot <- function(trip) {
         # annotate("text", x = 8, y = 0, label = "") +
         scale_x_continuous(limits = c(-0.5, 2)) +
         theme_void() +
-        theme(legend.position = "none")
+        theme(
+            legend.position = "none",
+            panel.border = element_rect(colour = "black", fill=NA, size=1))
     return(p)
 }
 
