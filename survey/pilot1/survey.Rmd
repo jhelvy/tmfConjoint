@@ -12,6 +12,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/startup.R')
 
-# Filter out the respondent 
+# Filter out the respondent
 doe <- doe[respID == respondentID]
+```
+
+# This goes in the survey google sheet block for creating a choice option
+
+Option 1
+
+```{r}
+makePlot(doe[(qID == 1) & (altID == 1)])
 ```
