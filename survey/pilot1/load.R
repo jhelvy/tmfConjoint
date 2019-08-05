@@ -43,6 +43,7 @@ makePlot <- function(trip) {
 # -----------------------------------------------------------------------------
 # Load the full design of experiment
 library(data.table)
+library(ggplot2)
 doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv')
 # doe <- fread('./survey/pilot1/doe.csv')
 
