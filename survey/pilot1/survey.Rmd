@@ -7,19 +7,37 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# This goes in the survey google sheet block for reading in the doe
+<!-- This goes in the survey google sheet block for reading in the doe -->
 
-```{r}
-source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/startup.R')
-
+```{r message=FALSE}
+source('https://formr.org/assets/tmp/admin/PZvRqGN_fLDqQlmf80U03ZIKTtYqqfOfW0k88cmRDjj4.txt?v1565019845')
 # Filter out the respondent
 doe <- doe[respID == respondentID]
+trip1 <- doe[(altID == 1) & (qID == 1)]
+trip2 <- doe[(altID == 2) & (qID == 1)]
+trip3 <- doe[(altID == 3) & (qID == 1)]
 ```
+If these were your only options for this trip, which would you choose?"
 
-# This goes in the survey google sheet block for creating a choice option
+<!-- This goes in the survey google sheet block for creating a choice option -->
 
 **Option 1**
-
+**Price**: $ `r trip1$price`
+**Total Trip Time**: `r trip1$tripTimeRange` 
 ```{r fig.height=4, fig.width=2}
-makePlot(doe[(qID == 1) & (altID == 1)])
+makePlot(trip1)
+```
+
+**Option 2**
+**Price**: $ `r trip2$price`
+**Total Trip Time**: `r trip2$tripTimeRange` 
+```{r fig.height=4, fig.width=2}
+makePlot(trip2)
+```
+
+**Option 1**
+**Price**: $ `r trip3$price`
+**Total Trip Time**: `r trip3$tripTimeRange` 
+```{r fig.height=4, fig.width=2}
+makePlot(trip3)
 ```

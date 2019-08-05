@@ -48,7 +48,8 @@ makePlot <- function(trip) {
 # -----------------------------------------------------------------------------
 # Load the full design of experiment
 
-doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv')
+doe <- fread('https://formr.org/assets/tmp/admin/qzHT0E5YWLcFnccE0-0Pdc8na6PNs8Z1DIUKDLnAH0OO.txt?v1565019600')
+# doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv')
 # doe <- fread('./survey/pilot1/doe.csv')
 
 # Recode repsondent ID if it's greater than the max(doe$respID)
