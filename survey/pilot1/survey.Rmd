@@ -10,11 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # This goes in the survey google sheet block for reading in the doe
 
 ```{r}
-library(data.table)
-doe <- fread('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/survey_doe.csv')
+source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/load.R')
 
-id <- 1
-if (id > max(doe$respID)) {id <- id %% max(doe$respID)}
-
-doe <- doe[(respID == id) & (qID == 1)]
+# Filter out the respondent 
+doe <- doe[respID == id]
 ```
