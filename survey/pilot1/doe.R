@@ -34,12 +34,13 @@ ff <- expand.grid(
 # -----------------------------------------------------------------------------
 # Translate full factorial into design for plotting
 
-# Compute trip time range
+# Compute trip time range and number of legs
 doe <- ff %>%
     mutate(
         tripTimeRange  = paste(
             round(tripTime*(1 - tripTimeUnc)), '-',
-            round(tripTime*(1 + tripTimeUnc)), 'minutes', sep=' '))
+            round(tripTime*(1 + tripTimeUnc)), 'minutes', sep=' '),
+        numLegs = str_count(trip, '\\|') + 1)
 
 # Randomize design 
 doe <- doe[sample(x=seq(nrow(doe)), size=nrow(doe), replace=F),]
