@@ -50,3 +50,11 @@ makePlot <- function(trip) {
 
 doeFilePath <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv'
 doe <- fread(doeFilePath)
+
+
+
+
+
+
+
+
