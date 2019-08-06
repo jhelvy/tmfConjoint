@@ -9,13 +9,13 @@ trips1 <- expand.grid(
 trips2 <- expand.grid(
     leg1 = c('Car', 'Uber/Lyft', 'Taxi', 'Bus'),
     leg2 = 'Bus') %>%
-    mutate(trip = paste(leg1, leg2, sep='|Transfer|')) %>%
+    mutate(trip = paste(leg1, leg2, sep='|')) %>%
     select(trip)
 trips3 <- expand.grid(
     leg1 = c('Car', 'Uber/Lyft', 'Taxi', 'Bus'),
     leg2 = 'Bus',
     leg3 = c('Uber/Lyft', 'Taxi', 'Bus')) %>%
-    mutate(trip = paste(leg1, leg2, leg3, sep='|Transfer|') )%>%
+    mutate(trip = paste(leg1, leg2, leg3, sep='|') )%>%
     select(trip)
 trip <- rbind(trips1, trips2, trips3)
 trip <- as.character(trip$trip)
@@ -42,27 +42,6 @@ doe <- ff %>%
             round(tripTime*(1 + tripTimeUnc)), 'minutes', sep=' '),
         numLegs = str_count(trip, '\\|') + 1)
         
-
-
-    if (trip$taxiWaitTime > 0) {
-        if ('Uber/Lyft' %in% labels) {
-            uberId <- which(labels == 'Uber/Lyft') - 1
-            labels[uberId] <- paste(labels[uberId], ' (', trip$taxiWaitTime, ' min wait)', sep='')
-        } 
-        if ('Taxi' %in% labels) {
-            taxiId <- which(labels == 'Taxi') - 1
-            labels[taxiId] <- paste(labels[taxiId], ' (', trip$taxiWaitTime, ' min wait)', sep='')
-        }
-    }
-    if (trip$busWaitTime > 0) {
-        if ('Bus' %in% labels) {
-            busId <- which(labels == 'Bus') - 1
-            labels[busId] <- paste(labels[busId], ' (', trip$busWaitTime, ' min wait)', sep='')
-        } 
-    }
-
-
-
 # Randomize design 
 doe <- doe[sample(x=seq(nrow(doe)), size=nrow(doe), replace=F),]
 
