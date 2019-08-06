@@ -1,19 +1,28 @@
 library(data.table)
 library(ggplot2)
+library(here)
 
 # -----------------------------------------------------------------------------
 # Functions for making trip images
 
 addWaitTimes <- function(labels, trip) {
-    waitTime <- labels
     if (trip$taxiWaitTime > 0) {
         if ('Uber/Lyft' %in% labels) {
-            labels[which(labels == 'Uber/Lyft')]
-            gsub('Uber/Lyft', paste('Uber/Lyft'), labels)
-            
+            uberId <- which(labels == 'Uber/Lyft') - 1
+            labels[uberId] <- paste(labels[uberId], ' (', trip$taxiWaitTime, ' min wait)', sep='')
+        } 
+        if ('Taxi' %in% labels) {
+            taxiId <- which(labels == 'Taxi') - 1
+            labels[taxiId] <- paste(labels[taxiId], ' (', trip$taxiWaitTime, ' min wait)', sep='')
         }
-
     }
+    if (trip$busWaitTime > 0) {
+        if ('Bus' %in% labels) {
+            busId <- which(labels == 'Bus') - 1
+            labels[busId] <- paste(labels[busId], ' (', trip$busWaitTime, ' min wait)', sep='')
+        } 
+    }
+    return(labels)
 }
 
 getLabels <- function(trip) {
@@ -38,8 +47,9 @@ getPlotDf <- function(trip) {
         x     = 0,
         y     = seq(0, -1, length.out = length(labels)),
         label = labels)
-    plotDf[, type := ifelse(label %in% c('Start', 'Transfer', 'End'),
-                            'Node', 'Edge')]
+    nodeDf <- plotDf[label %in% c('Start', 'Transfer', 'End')]
+    labelDf <- plotDf[! label %in% c('Start', 'Transfer', 'End')]
+    labelDf$x <- 0.5
     return(plotDf)
 }
 
@@ -59,7 +69,8 @@ makePlot <- function(trip) {
 # -----------------------------------------------------------------------------
 # Load the full design of experiment
 
-doeFilePath <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv'
+# doeFilePath <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv'
+doeFilePath <- here::here('survey', 'pilot2', 'doe.csv')
 doe <- fread(doeFilePath)
 
 
