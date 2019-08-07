@@ -62,10 +62,11 @@ getTripDf <- function(row) {
     if (row$walkTimeEnd > 0) {tripDf <- addWalkingEnd(tripDf, row)}
     tripDf <- tripDf %>% 
         mutate(
-        type = ifelse(str_detect(label, 'Start') | 
-                          str_detect(label, 'Transfer') | 
-                          str_detect(label, 'End'), 'Node', 
-               ifelse(str_detect(label, 'Walk'), 'Walk', 'Vehicle')))
+        type = ifelse(str_detect(label, 'Start'), 'Start', 
+               ifelse(str_detect(label, 'End'), 'End', 
+               ifelse(str_detect(label, 'Walk'), 'Walk',
+               ifelse(str_detect(label, 'Transfer'), 'Node', 'Vehicle')))))
+        x = ifelse(type == 'Node', 0, 1))
     tripDf$respID <- row$respID
     tripDf$qID    <- row$qID
     tripDf$altID  <- row$altID

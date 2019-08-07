@@ -31,6 +31,14 @@ ff <- expand.grid(
     busWaitTime   = c(5, 10) # Minutes
 )
 
+# Filter out illogical trips
+ff <- ff %>% 
+    # You only walk when taking the bus
+    filter(! ((str_detect(trip, 'Bus') == F) & (walkTimeStart > 0))) %>% 
+    # You only wait on a taxi / uber when they're in the mode set
+    filter(! ((str_detect(trip, 'Uber') == F) & (str_detect(trip, 'Taxi') == F) & 
+              (taxiWaitTime > 0)))
+    
 # -----------------------------------------------------------------------------
 # Translate full factorial into design for plotting
 
