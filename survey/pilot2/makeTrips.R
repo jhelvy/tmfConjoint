@@ -65,7 +65,7 @@ getTripDf <- function(row) {
         type = ifelse(str_detect(label, 'Start'), 'Start', 
                ifelse(str_detect(label, 'End'), 'End', 
                ifelse(str_detect(label, 'Walk'), 'Walk',
-               ifelse(str_detect(label, 'Transfer'), 'Node', 'Vehicle')))))
+               ifelse(str_detect(label, 'Transfer'), 'Node', 'Vehicle')))),
         x = ifelse(type == 'Node', 0, 1))
     tripDf$respID <- row$respID
     tripDf$qID    <- row$qID
