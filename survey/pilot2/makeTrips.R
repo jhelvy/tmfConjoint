@@ -16,4 +16,4 @@ for (i in 1:nrow(doe)) {
     tripDfList[[i]] <- getTripDf(doe[i,])
 }
 
-saveRDS(tripDfList, here::here('survey', 'pilot2', 'tripDfList.Rds'))
+saveRDS(tripDfList, here::here('survey', 'pilot2', 'doe', 'tripDfList.Rds'))

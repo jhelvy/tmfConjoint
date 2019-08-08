@@ -100,49 +100,48 @@ addModeWaitTime <- function(trip, mode, waitTime) {
 
 addWalkingStart <- function(tripDf, row) {
     label <- paste('Walk (', row$walkTimeStart, ' min)', sep='')
-    y <- mean(tripDf$y[1:2])
-    if (row$numLegs == 1) {y <- y - 0.1}
-    walkDf <- tibble(x=0, y=y, label=label)
-    return(bind_rows(tripDf[1,], walkDf, tripDf[2:nrow(tripDf),]))
+    y1 <- mean(tripDf$y[1:2])
+    if (row$numLegs == 1) {y1 <- 0.2}
+    y2 <- y1 / 2
+    walkDf <- tibble(y=c(y1, y2), label=c("", label))
+    tripDf <- bind_rows(tripDf, walkDf) %>% arrange(y)
+    return(tripDf)
 }
 
 addWalkingEnd <- function(tripDf, row) {    
     numRows <- nrow(tripDf)
     label <- paste('Walk (', row$walkTimeEnd, ' min)', sep='')
-    y <- mean(c(1, tripDf$y[numRows-1]))
-    if (row$numLegs == 1) {y <- y + 0.1}
-    walkDf <- tibble(x=0, y=y, label=label)
-    return(bind_rows(tripDf[1:(numRows-1),], walkDf, tripDf[numRows,]))
+    y1 <- mean(c(1, tripDf$y[numRows-1]))
+    if (row$numLegs == 1) {y1 <- 0.8}
+    y2 <- mean(c(1, y1))
+    walkDf <- tibble(y=c(y1, y2), label=c("", label))
+    tripDf <- bind_rows(tripDf, walkDf) %>% arrange(y)
+    return(tripDf)
 }
 
 addWalking <- function(tripDf, row) {
-    
+    if (row$walkTimeStart > 0) {tripDf <- addWalkingStart(tripDf, row)}
+    if (row$walkTimeEnd > 0) {tripDf <- addWalkingEnd(tripDf, row)}    
+    return(tripDf)
 }
 
 getTripDf <- function(row) {
     trip <- str_split(row$trip, '\\|')[[1]]
     trip <- addWaitTimes(trip, row)
     tripDf <- tibble(
-        x     = 0,
         y     = seq(0, 1, length.out = length(trip)),
-        label = trip) 
-    tripDf <- addWalking(tripDf, row)
-    
-    
-    if (row$walkTimeStart > 0) {tripDf <- addWalkingStart(tripDf, row)}
-    if (row$walkTimeEnd > 0) {tripDf <- addWalkingEnd(tripDf, row)}
-    
-    
-    tripDf <- tripDf %>% 
+        label = trip) %>%  
+        addWalking(row) %>% 
         mutate(
-            type = ifelse(str_detect(label, 'Start'), 'Node', 
-                          ifelse(str_detect(label, 'End'), 'Node', 
-                                 ifelse(str_detect(label, 'Walk'), 'Walk',
-                                        ifelse(str_detect(label, 'Transfer'), 'Node', 'Vehicle')))),
-            x = ifelse(type == 'Node', 0, 1))
-    tripDf$respID <- row$respID
-    tripDf$qID    <- row$qID
-    tripDf$altID  <- row$altID
-    tripDf$obsID  <- row$obsID
+            x      = 0,
+            respID = row$respID,
+            qID    = row$qID,
+            altID  = row$altID,
+            obsID  = row$obsID,
+            type   = ifelse(str_detect(label, 'Start'), 'Node', 
+                     ifelse(str_detect(label, 'End'), 'Node', 
+                     ifelse(str_detect(label, 'Transfer'), 'Node', 
+                     ifelse(label == '', 'Node', 'Vehicle'))))) %>% 
+        select(x, y, label, type, respID, qID, altID, obsID)
     return(tripDf)
 }
