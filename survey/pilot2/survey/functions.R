@@ -19,7 +19,7 @@ makePlot <- function(trip) {
                          box.padding    = unit(0.35, "lines"),
                          point.padding  = unit(0.75, "lines"),
                          color          = "black",
-                         fill           = "white",
+                         # fill           = "white",
                          segment.colour = "black") +
         geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
                          size           = 4,
@@ -36,6 +36,6 @@ makePlot <- function(trip) {
                    fontface   = "bold",
                    fill       = "white",
                    color      = "black") +
-        scale_x_continuous(limits=c(-1, 0.7))
+        scale_x_continuous(limits=c(-1, 0.6))
     return(p)
 }
