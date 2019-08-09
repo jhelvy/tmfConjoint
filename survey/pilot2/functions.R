@@ -1,5 +1,6 @@
 library(tidyverse)
 library(ggrepel)
+library(data.table)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
 # -----------------------------------------------------------------------------
@@ -139,110 +140,79 @@ getTripNodes <- function(trip, row) {
     return(y)
 }
 
+addPlotStats <- function(tripDf, row) {
+    # Compute where to put nodes
+    node = rep(0, nrow(tripDf))
+    node[which(str_detect(tripDf$label, 'Transfer'))] <- 1
+    # Compute where to draw the solid line
+    line = rep(0, nrow(tripDf))
+    if (row$walkTimeStart > 0) {
+        line[3] <- 1
+    } else {
+        line[1] <- 1
+    }
+    if (row$walkTimeEnd > 0) {
+        line[nrow(tripDf)-2] <- 1
+    } else {
+        line[nrow(tripDf)] <- 1
+    }
+    # Compute which type of label to print
+    labelType = rep('Transit', nrow(tripDf))
+    labelType[which(str_detect(tripDf$label, 'Transfer'))] <- 'Node'
+    labelType[c(1, nrow(tripDf))] <- 'Terminal'
+    # Add variables to data frame
+    tripDf$node <- node
+    tripDf$line <- line
+    tripDf$labelType <- labelType
+    return(tripDf)
+}
+
 getTripDf <- function(row) {
     trip   <- makeTripVector(row)
     nodes  <- getTripNodes(trip, row)
     tripDf <- tibble(
         x     = 0,
         y     = nodes,
-        label = trip) %>% 
+        label = trip) %>%
+        addPlotStats(row) %>%
         mutate(
             respID = row$respID,
             qID    = row$qID,
             altID  = row$altID,
-            obsID  = row$obsID,
-            type   = ifelse(str_detect(label, 'Start'), 'Node',
-                     ifelse(str_detect(label, 'End'), 'Node',
-                     ifelse(str_detect(label, 'Transfer'), 'Node',
-                     ifelse(label == '', 'Node', 'Transit'))))) %>%
-        select(x, y, label, type, respID, qID, altID, obsID)
+            obsID  = row$obsID)
     return(tripDf)
 }
 
 # -----------------------------------------------------------------------------
 # Functions making the trip plots
 
-theme_trip <- function(){
-    theme(text = element_text("sans-serif"),
-
-          panel.grid.minor = element_blank(),
-          panel.background =  element_blank(),
-          panel.border = element_blank(),
-
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
-
-          axis.ticks.x = element_blank(),
-          axis.ticks.y = element_blank(),
-
-          legend.position = "none"
-    )
-}
-
-formatPlotDf <- function(trip) {
-    node  <- trip[type == 'Node']
-    label <- trip[type != 'Node']
-    return(list(node=node, label=label))
-}
-
 makePlot <- function(trip) {
     p <-
-        ggplot(data = trip, aes(x = x, y = y)) +
-        geom_line() +
-        geom_label(aes(x = x, y = y, label = label, fill = type)) +
-        scale_fill_manual(values=c("#FFFFFF", "#E0E0E0")) +
-        scale_x_continuous(limits = c(-1, 1)) +
-        theme_void() +
-        theme(
-            legend.position = "none",
-            panel.border = element_rect(colour = "black", fill=NA, size=1))
+        ggplot(data = trip[node == 1], aes(x = x, y = y)) +
+        geom_point(size=2) +
+        geom_point(size=4, alpha=.5) +
+        geom_point(size=6, alpha=.25) +
+        geom_line(data = trip, size=1, linetype='dotted') +
+        geom_line(data = trip[line == 1], size=1) +
+        theme_trip() +
+        geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
+                         size = 4,
+                         force = 3,
+                         nudge_x = 0.1,
+                         fontface ="bold",
+                         box.padding = unit(0.35, "lines"),
+                         point.padding = unit(0.75, "lines"),
+                         color= "black",
+                         segment.colour = "black") +
+        geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
+                         size = 4,
+                         force = 3,
+                         nudge_x = -0.1,
+                         fontface ="bold",
+                         box.padding = unit(0.35, "lines"),
+                         point.padding = unit(0.75, "lines"),
+                         color= "black",
+                         segment.colour = "black") +
+        geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
     return(p)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# addWalkingStart <- function(trip, row) {
-#
-#     # y1 <- mean(tripDf$y[1:2])
-#     # if (row$numLegs == 1) {y1 <- -0.2}
-#     # y2 <- y1 / 2
-#     # walkDf <- tibble(y=c(y1, y2), label=c("", label))
-#     # tripDf <- bind_rows(tripDf, walkDf) %>% arrange(y)
-#     return(tripDf)
-# }
-
-# addWalkingEnd <- function(trip, row) {
-#     numRows <- nrow(tripDf)
-#     label <- paste('Walk (', row$walkTimeEnd, ' min)', sep='')
-#     y1 <- mean(c(1, tripDf$y[numRows-1]))
-#     if (row$numLegs == 1) {y1 <- -0.8}
-#     y2 <- mean(c(1, y1))
-#     walkDf <- tibble(y=c(y1, y2), label=c("", label))
-#     tripDf <- bind_rows(tripDf, walkDf) %>% arrange(y)
-#     return(tripDf)
-# }

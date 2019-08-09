@@ -2,12 +2,9 @@ library(here)
 source(here::here('survey', 'pilot2', 'functions.R'))
 
 # -----------------------------------------------------------------------------
-# Read in the doe and convert it to individual trips 
+# Read in the doe and convert it to individual trips
 
-doe <- read_csv(here::here('survey', 'pilot2', 'doe', 'doe.csv')) 
-    
-df <- doe %>% filter(respID == 1)
-test <- pmap(df, getTripDf)
+doe <- read_csv(here::here('survey', 'pilot2', 'doe', 'doe.csv'))
 
 # Create trips
 tripDfList <- list()
@@ -31,7 +28,7 @@ for (i in 2:length(tripDfList)) {
     } else {
         # Save the tripDf
         tripDf <- do.call(rbind, temp)
-        write_csv(tripDf, here::here('survey', 'pilot2', 'doe', 'trips', 
+        write_csv(tripDf, here::here('survey', 'pilot2', 'doe', 'trips',
                                      paste(respID, '.csv', sep='')))
         # Start a new temp list
         respID <- trip$respID[1]

@@ -4,49 +4,45 @@ library(ggplot2)
 # -----------------------------------------------------------------------------
 # Functions for making trip images
 
-getLabels <- function(trip) {
-    modeLabels <- strsplit(trip$trip, '\\|')[[1]]
-    names(modeLabels) <- seq(1, 2*length(modeLabels), by=2)
-    if (trip$numLegs > 1) {
-        transferLabels <- rep('Transfer', trip$numLegs-1)
-        names(transferLabels) <- seq(2, 2*length(transferLabels), by=2)
-        labels <- c(modeLabels, transferLabels)
-        labels <- as.vector(labels[order(names(labels))])
-    } else {
-        labels <- modeLabels
-    }
-    return(rev(c('Start', labels, 'End')))
-}
-
-getPlotDf <- function(trip) {
-    labels <- getLabels(trip)
-    plotDf <- data.table(
-        x     = 0,
-        y     = seq(0, 1, length.out = length(labels)),
-        label = labels)
-    plotDf[, type := ifelse(label %in% c('Start', 'Transfer', 'End'),
-                            'Node', 'Edge')]
-    return(plotDf)
-}
-
 makePlot <- function(trip) {
-    p <- ggplot(data = getPlotDf(trip), aes(x = x, y = y)) +
-        geom_point(size=5, aes(color=type)) +
-        scale_color_manual(values=c("#FFFFFF", "#000000")) +
-        geom_line() +
-        geom_label(aes(x = x + 1, y = y, label = label, fill = type)) +
-        scale_fill_manual(values=c("#FFFFFF", "#E0E0E0")) +
-        # annotate("text", x = 8, y = 0, label = "") +
-        scale_x_continuous(limits = c(-0.5, 2)) +
-        theme_void() +
-        theme(
-            legend.position = "none",
-            panel.border = element_rect(colour = "black", fill=NA, size=1))
+    p <-
+        ggplot(data = trip[node == 1], aes(x = x, y = y)) +
+        geom_point(size=2) +
+        geom_point(size=4, alpha=.5) +
+        geom_point(size=6, alpha=.25) +
+        geom_line(data = trip, size=1, linetype='dotted') +
+        geom_line(data = trip[line == 1], size=1) +
+        theme_trip() +
+        geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
+                         size = 4, 
+                         force = 3,
+                         nudge_x = 0.1,
+                         fontface ="bold",
+                         box.padding = unit(0.35, "lines"),
+                         point.padding = unit(0.75, "lines"),
+                         color= "black", 
+                         segment.colour = "black") +
+        geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
+                         size = 4, 
+                         force = 3,
+                         nudge_x = -0.1,
+                         fontface ="bold",
+                         box.padding = unit(0.35, "lines"),
+                         point.padding = unit(0.75, "lines"),
+                         color= "black", 
+                         segment.colour = "black") +
+        geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
     return(p)
 }
 
 # -----------------------------------------------------------------------------
 # Load the full design of experiment
 
-doeFilePath <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot1/doe.csv'
-doe <- fread(doeFilePath)
+root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/doe/trips/'
+path <- paste(root, respondentID, '.csv', sep='')
+doe  <- fread(path)
+
+# Filter out the alternatives
+trip1 <- doe[(altID == 1)]
+trip2 <- doe[(altID == 2)]
+trip3 <- doe[(altID == 3)]
