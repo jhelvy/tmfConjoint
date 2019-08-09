@@ -10,14 +10,17 @@ knitr::opts_chunk$set(echo = TRUE)
 <!-- This goes in the survey google sheet block for reading in the doe -->
 
 ```{r message=FALSE}
-# Load libraries and functions
-source('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/startup.R')
+root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/'
+source(paste(root, 'functions.R', sep=''))
+doe <- fread(paste(root, 'doe/trips/', respondentID, '.csv', sep=''))
 
-# Load respondent doe
-path <- paste('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/trips/', respondentID, '.csv', sep='')
-doe <- fread(path)
+# Filter out the alternatives
+trip1 <- doe[(altID == 1) & (qID == 1)]
+trip2 <- doe[(altID == 2) & (qID == 1)]
+trip3 <- doe[(altID == 3) & (qID == 1)]
 ```
-If these were your only options for this trip, which would you choose?"
+(1 of 5) If these were your only options for this trip, which would you choose?
+
 
 <!-- This goes in the survey google sheet block for creating a choice option -->
 

@@ -1,9 +1,6 @@
 library(data.table)
 library(ggplot2)
 
-# -----------------------------------------------------------------------------
-# Functions for making trip images
-
 makePlot <- function(trip) {
     p <-
         ggplot(data = trip[node == 1], aes(x = x, y = y)) +
@@ -14,35 +11,23 @@ makePlot <- function(trip) {
         geom_line(data = trip[line == 1], size=1) +
         theme_trip() +
         geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
-                         size = 4, 
+                         size = 4,
                          force = 3,
                          nudge_x = 0.1,
                          fontface ="bold",
                          box.padding = unit(0.35, "lines"),
                          point.padding = unit(0.75, "lines"),
-                         color= "black", 
+                         color= "black",
                          segment.colour = "black") +
         geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
-                         size = 4, 
+                         size = 4,
                          force = 3,
                          nudge_x = -0.1,
                          fontface ="bold",
                          box.padding = unit(0.35, "lines"),
                          point.padding = unit(0.75, "lines"),
-                         color= "black", 
+                         color= "black",
                          segment.colour = "black") +
         geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
     return(p)
 }
-
-# -----------------------------------------------------------------------------
-# Load the full design of experiment
-
-root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/doe/trips/'
-path <- paste(root, respondentID, '.csv', sep='')
-doe  <- fread(path)
-
-# Filter out the alternatives
-trip1 <- doe[(altID == 1)]
-trip2 <- doe[(altID == 2)]
-trip3 <- doe[(altID == 3)]
