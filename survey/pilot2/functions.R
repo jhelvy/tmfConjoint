@@ -179,7 +179,9 @@ getTripDf <- function(row) {
             respID = row$respID,
             qID    = row$qID,
             altID  = row$altID,
-            obsID  = row$obsID)
+            obsID  = row$obsID, 
+            price  = row$price, 
+            timeRange = row$tripTimeRange)
     return(tripDf)
 }
 

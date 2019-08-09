@@ -9,7 +9,7 @@ makePlot <- function(trip) {
         geom_point(size=6, alpha=.25) +
         geom_line(data = trip, size=1, linetype='dotted') +
         geom_line(data = trip[line == 1], size=1) +
-        theme_trip() +
+        theme_void() +
         geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
                          size = 4,
                          force = 3,
