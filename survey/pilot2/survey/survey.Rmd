@@ -5,6 +5,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+respondentID <- 1
 ```
 
 <!-- This goes in the survey google sheet block for reading in the doe -->
@@ -13,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/'
 source(paste(root, 'survey/functions.R', sep=''))
 doe <- fread(paste(root, 'doe/trips/', respondentID, '.csv', sep=''))
+
+# source(here::here('survey', 'pilot2', 'survey', 'functions.R'))
 
 # Filter out the alternatives
 trip1 <- doe[(altID == 1) & (qID == 1)]
@@ -25,22 +28,37 @@ trip3 <- doe[(altID == 3) & (qID == 1)]
 <!-- This goes in the survey google sheet block for creating a choice option -->
 
 **Option 1**
-**Price**: $ `r trip1$price`
-**Total Trip Time**: `r trip1$tripTimeRange`
-```{r fig.height=4, fig.width=2}
+
+---
+
+**Price**: $ `r trip1$price[1]`
+
+**Total Trip Time**: `r trip1$timeRange[1]` 
+
+```{r fig.height=5, fig.width=2.5}
 makePlot(trip1)
 ```
 
 **Option 2**
-**Price**: $ `r trip2$price`
-**Total Trip Time**: `r trip2$tripTimeRange`
-```{r fig.height=4, fig.width=2}
+
+---
+
+**Price**: $ `r trip2$price[1]`
+
+**Total Trip Time**: `r trip2$timeRange[1]` 
+
+```{r fig.height=5, fig.width=2.5}
 makePlot(trip2)
 ```
 
-**Option 1**
-**Price**: $ `r trip3$price`
-**Total Trip Time**: `r trip3$tripTimeRange`
-```{r fig.height=4, fig.width=2}
+**Option 3**
+
+---
+
+**Price**: $ `r trip3$price[1]`
+
+**Total Trip Time**: `r trip3$timeRange[1]` 
+
+```{r fig.height=5, fig.width=2.5}
 makePlot(trip3)
 ```

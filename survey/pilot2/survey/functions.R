@@ -14,7 +14,7 @@ makePlot <- function(trip) {
         geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
             size = 4,
             force = 3,
-            nudge_x = 0.01,
+            nudge_x = 1,
             fontface ="bold",
             box.padding = unit(0.35, "lines"),
             point.padding = unit(0.75, "lines"),
@@ -23,12 +23,13 @@ makePlot <- function(trip) {
         geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
             size = 4,
             force = 3,
-            nudge_x = -0.1,
+            nudge_x = -1,
             fontface ="bold",
             box.padding = unit(0.35, "lines"),
             point.padding = unit(0.75, "lines"),
             color= "black",
             segment.colour = "black") +
-        geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
+        geom_label(data = trip[labelType == 'Terminal'], aes(label=label)) +
+        scale_x_continuous(limits=c(-1, 0.7))
     return(p)
 }
