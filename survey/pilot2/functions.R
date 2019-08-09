@@ -179,8 +179,8 @@ getTripDf <- function(row) {
             respID = row$respID,
             qID    = row$qID,
             altID  = row$altID,
-            obsID  = row$obsID, 
-            price  = row$price, 
+            obsID  = row$obsID,
+            price  = row$price,
             timeRange = row$tripTimeRange)
     return(tripDf)
 }
@@ -196,25 +196,25 @@ makePlot <- function(trip) {
         geom_point(size=6, alpha=.25) +
         geom_line(data = trip, size=1, linetype='dotted') +
         geom_line(data = trip[line == 1], size=1) +
-        theme_trip() +
+        theme_void() +
         geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
-                         size = 4,
-                         force = 3,
-                         nudge_x = 0.1,
-                         fontface ="bold",
-                         box.padding = unit(0.35, "lines"),
-                         point.padding = unit(0.75, "lines"),
-                         color= "black",
-                         segment.colour = "black") +
+            size = 4,
+            force = 3,
+            nudge_x = 0.1,
+            fontface ="bold",
+            box.padding = unit(0.35, "lines"),
+            point.padding = unit(0.75, "lines"),
+            color= "black",
+            segment.colour = "black") +
         geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
-                         size = 4,
-                         force = 3,
-                         nudge_x = -0.1,
-                         fontface ="bold",
-                         box.padding = unit(0.35, "lines"),
-                         point.padding = unit(0.75, "lines"),
-                         color= "black",
-                         segment.colour = "black") +
+            size = 4,
+            force = 3,
+            nudge_x = -0.1,
+            fontface ="bold",
+            box.padding = unit(0.35, "lines"),
+            point.padding = unit(0.75, "lines"),
+            color= "black",
+            segment.colour = "black") +
         geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
     return(p)
 }

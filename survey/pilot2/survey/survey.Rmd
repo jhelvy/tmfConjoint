@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 <!-- This goes in the survey google sheet block for reading in the doe -->
 
 ```{r message=FALSE}
-root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/'
+root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/survey/'
 source(paste(root, 'functions.R', sep=''))
 doe <- fread(paste(root, 'doe/trips/', respondentID, '.csv', sep=''))
 
