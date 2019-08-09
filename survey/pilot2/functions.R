@@ -82,11 +82,11 @@ removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
 
 addWalking <- function(trip, row) {
     if (row$walkTimeStart > 0) {
-        label <- paste('Walk (', row$walkTimeStart, ' min)', sep='')
+        label <- paste('Walk\n(', row$walkTimeStart, ' min)', sep='')
         trip  <- c(label, 'Transfer', trip)
     }
     if (row$walkTimeEnd > 0) {
-        label <- paste('Walk (', row$walkTimeEnd, ' min)', sep='')
+        label <- paste('Walk\n(', row$walkTimeEnd, ' min)', sep='')
         trip  <- c(trip, 'Transfer', label)
     }
     return(trip)
@@ -183,38 +183,4 @@ getTripDf <- function(row) {
             price  = row$price,
             timeRange = row$tripTimeRange)
     return(tripDf)
-}
-
-# -----------------------------------------------------------------------------
-# Functions making the trip plots
-
-makePlot <- function(trip) {
-    p <-
-        ggplot(data = trip[node == 1], aes(x = x, y = y)) +
-        geom_point(size=2) +
-        geom_point(size=4, alpha=.5) +
-        geom_point(size=6, alpha=.25) +
-        geom_line(data = trip, size=1, linetype='dotted') +
-        geom_line(data = trip[line == 1], size=1) +
-        theme_void() +
-        geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
-            size = 4,
-            force = 3,
-            nudge_x = 0.1,
-            fontface ="bold",
-            box.padding = unit(0.35, "lines"),
-            point.padding = unit(0.75, "lines"),
-            color= "black",
-            segment.colour = "black") +
-        geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
-            size = 4,
-            force = 3,
-            nudge_x = -0.1,
-            fontface ="bold",
-            box.padding = unit(0.35, "lines"),
-            point.padding = unit(0.75, "lines"),
-            color= "black",
-            segment.colour = "black") +
-        geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
-    return(p)
 }

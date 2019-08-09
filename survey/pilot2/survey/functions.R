@@ -23,7 +23,7 @@ makePlot <- function(trip) {
         geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
             size = 4,
             force = 3,
-            nudge_x = -0.1,
+            nudge_x = -0.2,
             fontface ="bold",
             box.padding = unit(0.35, "lines"),
             point.padding = unit(0.75, "lines"),
