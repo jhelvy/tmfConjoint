@@ -113,8 +113,8 @@ doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp) %>%
             numLegs == 1, paste(leg1Mode), ifelse(
             numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
             paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
-        nBus  = str_count(trip, 'Bus'),
-        nTaxi = str_count(trip, 'Taxi') + str_count(trip, 'Uber'),
+        leg2Mode = ifelse(walkTimeLeg > 0,
+            paste(leg2Mode, '\n(', walkTimeLeg, ' min)', sep=''), leg2Mode),
         totalWalkTime = walkTimeStart + walkTimeLeg + walkTimeEnd,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalWalkTime + totalWaitTime + transitTime,
