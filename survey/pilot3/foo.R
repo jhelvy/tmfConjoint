@@ -1,3 +1,6 @@
+setwd('/Users/jhelvy/gh/tmfConjoint/')
+
+
 library(here)
 source(here::here('survey', 'pilot2', 'functions.R'))
 
@@ -22,22 +25,22 @@ ggplot(data = trip[node == 1], aes(x = x, y = y)) +
     geom_line(data = trip[line == 1], size=1) +
     theme_void() +
     geom_label_repel(data = trip[labelType == 'Transit'], aes(label=label),
-        size = 4, 
+        size = 4,
         force = 3,
         nudge_x = 0.1,
         fontface ="bold",
         box.padding = unit(0.35, "lines"),
         point.padding = unit(0.75, "lines"),
-        color= "black", 
+        color= "black",
         segment.colour = "black") +
     geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
-        size = 4, 
+        size = 4,
         force = 3,
         nudge_x = -0.1,
         fontface ="bold",
         box.padding = unit(0.35, "lines"),
         point.padding = unit(0.75, "lines"),
-        color= "black", 
+        color= "black",
         segment.colour = "black") +
     geom_label(data = trip[labelType == 'Terminal'], aes(label=label))
 

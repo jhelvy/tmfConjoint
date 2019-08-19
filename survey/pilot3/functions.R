@@ -63,22 +63,17 @@ addWalking <- function(trip, row) {
     return(trip)
 }
 
-addWaitTimes <- function(trip, row) {
-    if (row$taxiWaitTime > 0) {
-        trip <- addModeWaitTime(trip, 'Taxi', row$taxiWaitTime)
-        trip <- addModeWaitTime(trip, 'Uber/Lyft', row$taxiWaitTime)
-    }
-    if (row$busWaitTime > 0) {
-        trip <- addModeWaitTime(trip, 'Bus', row$busWaitTime)
-    }
-    return(trip)
-}
-
-addModeWaitTime <- function(trip, mode, waitTime) {
-    if (mode %in% trip) {
-        modeID <- which(trip == mode) - 1
-        trip[modeID] <- paste(trip[modeID], '\n(', waitTime,
-                              ' min wait)', sep='')
+addTransferTimes <- function(trip, row) {
+    transferTimes <- row[c('transfer1Time', 'transfer2Time', 'transfer3Time')]
+    trip <- c('Start', trip, 'End')
+    time_i <- seq(length(transferTimes))
+    trip_i <- 2*time_i - 1
+    if (str_detect(trip[2], 'Walk')) {trip_i <- trip_i + 2}
+    for (i in time_i) {
+        if (transferTimes[i] > 0) {
+            trip[trip_i[i]] = paste(
+                trip[trip_i[i]], '\n(', transferTimes[i], ' min wait)', sep='')
+        }
     }
     return(trip)
 }
@@ -87,8 +82,7 @@ makeTripVector <- function(row) {
     trip <- str_replace_all(row$trip, '\\|', '|Transfer|')
     trip <- str_split(trip, '\\|')[[1]]
     trip <- addWalking(trip, row)
-    trip <- c('Start', trip, 'End')
-    trip <- addWaitTimes(trip, row)
+    trip <- addTransferTimes(trip, row)
     return(trip)
 }
 
