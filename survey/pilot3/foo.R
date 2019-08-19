@@ -26,3 +26,6 @@ makePlot(trip1)
 makePlot(trip2)
 makePlot(trip3)
 
+
+
+makePlot(trip  <- as.data.table(getTripDf(doe[4,])))

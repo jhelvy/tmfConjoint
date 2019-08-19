@@ -127,11 +127,17 @@ getYSpacing <- function(trip, row) {
     if (str_detect(row$leg2Mode, 'Walk')) { times[2] = row$walkTimeLeg }
     if (row$walkTimeStart > 0) { times = c(row$walkTimeStart, times) }
     if (row$walkTimeEnd > 0) { times = c(times, row$walkTimeEnd) }
-    breaks = cumsum(c(0, -1 * times / sum(times)))
-    y = c(0)
-    for (i in 2:length(breaks)) {
-        space = breaks[i-1] + ((breaks[i] - breaks[i-1]) / 2)
-        y = c(y, space, breaks[i])
+    breaks  = cumsum(c(0, -1 * times / sum(times)))
+    if (abs(breaks[2]) < 0.12) {
+        breaks[2] = -0.12
+    }
+    if (abs(breaks[length(breaks)-1]) > 0.88) {
+        breaks[length(breaks)-1] = -0.88
+    }
+    spacing = (breaks[2:length(breaks)] - breaks[1:(length(breaks) - 1)]) / 2
+    y       = c(0)
+    for (i in 1:(length(breaks) - 1)) {
+        y = c(y, breaks[i] + spacing[i], breaks[i+1])
     }
     return(y)
 }

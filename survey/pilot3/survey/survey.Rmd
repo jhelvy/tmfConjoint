@@ -8,14 +8,21 @@ knitr::opts_chunk$set(echo = TRUE)
 respondentID <- 1
 ```
 
+```{r}
+# Load initial formr variables
+rootPath <- '/Users/jhelvy/gh/tmfConjoint/survey/pilot3/'
+doePath <- paste(rootPath, "doe/doe.csv", sep="")
+maxResp <- 6000
+respondentID <- 1
+functionsPath <- paste(rootPath, "survey/functions.R", sep='')
+respTripsPath <- paste(rootPath, "doe/trips/", respondentID, ".csv", sep="")
+```
+
 <!-- This goes in the survey google sheet block for reading in the doe -->
 
 ```{r message=FALSE}
-root <- 'https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/'
-source(paste(root, 'survey/functions.R', sep=''))
-doe <- fread(paste(root, 'doe/trips/', respondentID, '.csv', sep=''))
-
-source(here::here('survey', 'pilot2', 'survey', 'functions.R'))
+source(functionsPath)
+doe <- fread(respTripsPath)
 
 # Filter out the alternatives
 trip1 <- doe[(altID == 1) & (qID == 1)]
@@ -23,7 +30,6 @@ trip2 <- doe[(altID == 2) & (qID == 1)]
 trip3 <- doe[(altID == 3) & (qID == 1)]
 ```
 (1 of 5) If these were your only options for this trip, which would you choose?
-
 
 <!-- This goes in the survey google sheet block for creating a choice option -->
 
@@ -33,7 +39,7 @@ trip3 <- doe[(altID == 3) & (qID == 1)]
 
 **Price**: $ `r trip1$price[1]`
 
-**Total Trip Time**: `r trip1$timeRange[1]` 
+**Total Trip Time**: `r trip1$timeRange[1]`
 
 ```{r fig.height=5, fig.width=2.5}
 makePlot(trip1)
@@ -45,7 +51,7 @@ makePlot(trip1)
 
 **Price**: $ `r trip2$price[1]`
 
-**Total Trip Time**: `r trip2$timeRange[1]` 
+**Total Trip Time**: `r trip2$timeRange[1]`
 
 ```{r fig.height=5, fig.width=2.5}
 makePlot(trip2)
@@ -57,7 +63,7 @@ makePlot(trip2)
 
 **Price**: $ `r trip3$price[1]`
 
-**Total Trip Time**: `r trip3$timeRange[1]` 
+**Total Trip Time**: `r trip3$timeRange[1]`
 
 ```{r fig.height=5, fig.width=2.5}
 makePlot(trip3)
