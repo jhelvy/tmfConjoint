@@ -6,46 +6,17 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 # -----------------------------------------------------------------------------
 # Functions making the DOE
 
-removeIllogicalTrips <- function(ff) {
-    design <- ff %>%
-        mutate(
-            numLegs      = str_count(trip, '\\|') + 1,
-            firstLegMode = word(trip, sep='\\|', 1),
-            lastLegMode  = word(trip, sep='\\|', numLegs),
-            carInTrip    = str_detect(trip, 'Car'),
-            busInTrip    = str_detect(trip, 'Bus'),
-            taxiInTrip   = str_detect(trip, 'Taxi') | str_detect(trip, 'Uber'),
-            # You only walk at the start or end of a bus trip
-            walkTimeStart = ifelse(
-                (busInTrip == F) | (firstLegMode != 'Bus'), 0, walkTimeStart),
-            walkTimeEnd = ifelse(
-                (busInTrip == F) | (lastLegMode != 'Bus'), 0, walkTimeEnd),
-            # You only wait on the bus if it's in the mode set and
-            busWaitTime = ifelse(
-                (busInTrip == F), 0, busWaitTime),
-            # You only wait on a taxi if it's in the mode set
-            taxiWaitTime = ifelse(
-                (taxiInTrip == F), 0, taxiWaitTime)
-        ) %>% distinct()
-    return(design)
-}
-
-makeFullFactorial <- function(trip, atts) {
-    atts$trip <- trip
-    ff <- expand.grid(atts)
-    return(removeIllogicalTrips(ff))
-}
-
-getSampleIDs <- function(ff, numSamples) {
-    car  <- sample(x=which(ff$carInTrip),  size=numSamples, replace=T)
-    taxi <- sample(x=which(ff$taxiInTrip), size=numSamples, replace=T)
-    bus  <- sample(x=which(ff$busInTrip),  size=numSamples, replace=T)
-    return(list(car=car, taxi=taxi, bus=bus))
+# Plot a comparison of the full factorial and doe counts
+barCompare <- function(df, var) {
+    df %>%
+        group_by(design) %>%
+        count({{var}}) %>%
+        ggplot(aes(x={{var}}, y=n)) +
+        geom_bar(stat='identity', position='dodge') +
+        facet_wrap(~design)
 }
 
 addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
-    nRowsPerResp   <- nAltsPerQ * nQPerResp
-    nResp          <- nrow(doe) / nRowsPerResp # Number of respondents
     doe$respID     <- rep(seq(nResp), each=nRowsPerResp)
     doe$qID        <- rep(rep(seq(nQPerResp), each=nAltsPerQ), nResp)
     doe$altID      <- rep(seq(nAltsPerQ), nResp*nQPerResp)
