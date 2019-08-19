@@ -7,10 +7,9 @@ makePlot <- function(trip) {
         ggplot(data = trip, aes(x = x, y = y)) +
         # Draw lines
         geom_line(data = trip, size = 1, linetype = 'dotted') +
-        geom_line(data = trip[line == 1], size = 1) +
-        geom_line(data = trip[line == 2], size = 1) +
-        geom_line(data = trip[line == 3], size = 1) +
-        geom_line(data = trip[line == 4], size = 1) +
+        geom_line(data = trip[lineNodes == 1], size = 1) +
+        geom_line(data = trip[lineNodes == 2], size = 1) +
+        geom_line(data = trip[lineNodes == 3], size = 1) +
         # Draw nodes
         geom_point(data = trip[node == 1], size = 4, pch = 21,
                    fill = 'white', colour = 'black') +

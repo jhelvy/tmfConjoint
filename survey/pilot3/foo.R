@@ -21,20 +21,11 @@ doe <- fread(respTripsPath)
 trip1 <- doe[(altID == 1) & (qID == 1)]
 trip2 <- doe[(altID == 2) & (qID == 1)]
 trip3 <- doe[(altID == 3) & (qID == 1)]
-```
-(1 of 6) If these were your only options for this trip, which would you choose?"
+
+makePlot(trip1)
 
 
 
-# Load respondent doe
-# path <- paste('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/trips/', respondentID, '.csv', sep='')
-path<- paste(here::here('survey', 'pilot2', 'doe', 'trips'), '/', respondentID, '.csv', sep='')
-doe <- fread(path)
-
-# Filter out the trips
-trip1 <- doe[(altID == 1) & (qID == 1)]
-trip2 <- doe[(altID == 2) & (qID == 1)]
-trip3 <- doe[(altID == 3) & (qID == 1)]
 
 ggplot(data = trip[node == 1], aes(x = x, y = y)) +
     geom_point(size=2) +
