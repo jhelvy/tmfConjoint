@@ -5,7 +5,7 @@ source(here::here('survey', 'pilot3', 'functions.R'))
 # Main DOE construction - randomized, stratified by number of trips and modes
 
 # List full set of possible modes in each trip leg
-car  <- c('Car', 'Car\n(Express Lane)')
+car  <- c('Car', 'Car\n(Express)')
 taxi <- c('Uber/Lyft', 'Taxi')
 bus  <- 'Bus'
 walk <- 'Walk'
@@ -53,6 +53,7 @@ ff <- as_tibble(expand.grid(
         uberInTrip = (leg1Mode == 'Uber/Lyft') | (leg3Mode == 'Uber/Lyft'),
         # You can only have an express lane fee for car modes
         expressFee = ifelse(str_detect(leg1Mode, 'Car'), expressFee, 0),
+        price = price + expressFee,
         # You only have a walkTimeLeg if the 2nd leg is walking
         walkTimeLeg = ifelse(walkInTrip, walkTimeLeg, 0),
         # You only walk at the start or end if first or last leg is a bus
@@ -109,12 +110,14 @@ doe <- ff_bal[sample(x=seq(nrow(ff_bal)), size=nRows, replace=T),]
 doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp) %>%
     # Add additional variables for plotting
     mutate(
+        # Add walk times to walking legs
+        leg2Mode = ifelse(walkTimeLeg > 0,
+            paste(leg2Mode, '\n(', walkTimeLeg, ' min)', sep=''),
+            paste(leg2Mode)),
         trip = ifelse(
             numLegs == 1, paste(leg1Mode), ifelse(
             numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
             paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
-        leg2Mode = ifelse(walkTimeLeg > 0,
-            paste(leg2Mode, '\n(', walkTimeLeg, ' min)', sep=''), leg2Mode),
         totalWalkTime = walkTimeStart + walkTimeLeg + walkTimeEnd,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalWalkTime + totalWaitTime + transitTime,
@@ -165,22 +168,9 @@ saveRDS(tripDfList, here::here('survey', 'pilot3', 'doe', 'tripDfList.Rds'))
 tripDfList <- readRDS(here::here('survey', 'pilot3', 'doe', 'tripDfList.Rds'))
 
 # Save each trip
-respID <- 1
-index <- 2
-temp <- list(tripDfList[[1]])
-for (i in 2:length(tripDfList)) {
-    trip <- tripDfList[[i]]
-    if (trip$respID[1] == respID) {
-        temp[[index]] <- trip
-        index <- index + 1
-    } else {
-        # Save the tripDf
-        tripDf <- do.call(rbind, temp)
-        write_csv(tripDf, here::here('survey', 'pilot3', 'doe', 'trips',
-                                     paste(respID, '.csv', sep='')))
-        # Start a new temp list
-        respID <- trip$respID[1]
-        index <- 2
-        temp <- list(trip)
-    }
+allTripDfs <- do.call(rbind, tripDfList)
+for (i in 1:length(unique(allTripDfs$respID))) {
+    respTripDf <- filter(allTripDfs, respID == i)
+    write_csv(respTripDf, here::here('survey', 'pilot3', 'doe', 'trips',
+                               paste(i, '.csv', sep='')))
 }

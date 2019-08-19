@@ -1,11 +1,30 @@
 setwd('/Users/jhelvy/gh/tmfConjoint/')
 
-
 library(here)
-source(here::here('survey', 'pilot2', 'functions.R'))
+source(here::here('survey', 'pilot3', 'functions.R'))
 
 # -----------------------------------------------------------------------------
+
+# Load initial formr variables
+rootPath <- "https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot3/"
+doePath <- paste(rootPath, "doe/doe.csv", sep="")
+maxResp <- 6000
 respondentID <- 1
+functionsPath <- paste(rootPath, "survey/functions.R", sep='')
+respTripsPath <- paste(rootPath, "doe/trips/", respondentID, ".csv", sep="")
+
+# Example question
+source(functionsPath)
+doe <- fread(respTripsPath)
+
+# Filter out the alternatives
+trip1 <- doe[(altID == 1) & (qID == 1)]
+trip2 <- doe[(altID == 2) & (qID == 1)]
+trip3 <- doe[(altID == 3) & (qID == 1)]
+```
+(1 of 6) If these were your only options for this trip, which would you choose?"
+
+
 
 # Load respondent doe
 # path <- paste('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/trips/', respondentID, '.csv', sep='')
