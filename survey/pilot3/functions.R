@@ -98,7 +98,7 @@ getPlotLineNodes <- function(tripDf) {
         lineNodes[i] = index
     }
     # Any legs < 3 nodes don't need a solid lineNodes
-    walkNodes <- as.integer(names(which(table(lineNodes) != 3)))
+    walkNodes <- as.integer(names(which(table(lineNodes) < 3)))
     lineNodes[which(lineNodes %in% walkNodes)] <- 0
     return(lineNodes)
 }
@@ -120,11 +120,27 @@ addPlotLabels <- function(tripDf) {
     return(tripDf)
 }
 
+getYSpacing <- function(trip, row) {
+    transitTime = row$totalTripTime - row$totalWalkTime - row$totalWaitTime
+    legTime     = transitTime / row$numLegs
+    times       = rep(legTime, row$numLegs)
+    if (str_detect(row$leg2Mode, 'Walk')) { times[2] = row$walkTimeLeg }
+    if (row$walkTimeStart > 0) { times = c(row$walkTimeStart, times) }
+    if (row$walkTimeEnd > 0) { times = c(times, row$walkTimeEnd) }
+    breaks = cumsum(c(0, -1 * times / sum(times)))
+    y = c(0)
+    for (i in 2:length(breaks)) {
+        space = breaks[i-1] + ((breaks[i] - breaks[i-1]) / 2)
+        y = c(y, space, breaks[i])
+    }
+    return(y)
+}
+
 getTripDf <- function(row) {
     trip   <- makeTripVector(row)
     tripDf <- tibble(
         x     = 0,
-        y     = seq(0, -1, length.out = length(trip)),
+        y     =  getYSpacing(trip, row),
         label = trip) %>%
         addPlotLabels() %>%
         mutate(
