@@ -154,7 +154,7 @@ saveRDS(tripDfList, here::here('survey', 'pilot4', 'survey',
 # -----------------------------------------------------------------------------
 # Read in trip list and save all trips for each respondent as a csv file
 
-tripDfList <- readRDS(here::here('survey', 'pilot4', 'doe', 
+tripDfList <- readRDS(here::here('survey', 'pilot4', 'survey', 
                                  'tripDfListNoCar.Rds'))
 
 # Save each trip
