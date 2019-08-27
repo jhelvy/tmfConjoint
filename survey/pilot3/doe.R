@@ -174,3 +174,24 @@ for (i in 1:length(unique(allTripDfs$respID))) {
     write_csv(respTripDf, here::here('survey', 'pilot3', 'doe', 'trips',
                                paste(i, '.csv', sep='')))
 }
+
+# -----------------------------------------------------------------------------
+# Read in trip csv files and save trip images 
+
+source(here::here('survey', 'pilot3', 'survey', 'functions.R'))
+tripDfDirs <- list.files(here::here('survey', 'pilot3', 'doe', 'trips'))
+
+for (i in 1:length(tripDfDirs)) {
+    path <- here::here('survey', 'pilot3', 'doe', 'trips', tripDfDirs[i])
+    respDf <- fread(path)
+    for (j in 1:max(respDf$qID)) {
+        trip1 <- makePlot(respDf[(altID == 1) & (qID == j)])
+        trip2 <- makePlot(respDf[(altID == 2) & (qID == j)])
+        trip3 <- makePlot(respDf[(altID == 3) & (qID == j)])
+        plotNames <- str_c(i, '-', j, '-', c(1,2,3), '.png')
+        paths <- here::here('survey', 'pilot3', 'doe', 'images', plotNames)
+        ggsave(paths[1], trip1, width=2.5, height=5)
+        ggsave(paths[2], trip2, width=2.5, height=5)
+        ggsave(paths[3], trip3, width=2.5, height=5)
+    }
+}
