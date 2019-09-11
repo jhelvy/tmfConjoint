@@ -4,12 +4,15 @@ library(ggrepel)
 
 makePlot <- function(trip) {
     p <-
-        ggplot(data = trip[node == 1], aes(x = x, y = y)) +
-        geom_point(size = 2) +
-        geom_point(size = 4, alpha = 0.5) +
-        geom_point(size = 6, alpha = 0.25) +
+        ggplot(data = trip, aes(x = x, y = y)) +
+        # Draw lines
         geom_line(data = trip, size = 1, linetype = 'dotted') +
-        geom_line(data = trip[line == 1], size = 1) +
+        geom_line(data = trip[lineNodes == 1], size = 1) +
+        geom_line(data = trip[lineNodes == 2], size = 1) +
+        geom_line(data = trip[lineNodes == 3], size = 1) +
+        # Draw nodes
+        geom_point(data = trip[node == 1], size = 4, pch = 21,
+                   fill = 'white', colour = 'black') +
         theme_void() +
         geom_text_repel(data = trip[labelType == 'Transit'], aes(label=label),
                          size           = 4,
