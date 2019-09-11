@@ -2,14 +2,14 @@ setwd('/Users/jhelvy/gh/tmfConjoint/')
 
 
 library(here)
-source(here::here('survey', 'pilot2', 'functions.R'))
+source(here::here('survey', 'pilot4', 'functions.R'))
 
 # -----------------------------------------------------------------------------
 respondentID <- 1
 
 # Load respondent doe
 # path <- paste('https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot2/trips/', respondentID, '.csv', sep='')
-path<- paste(here::here('survey', 'pilot2', 'doe', 'trips'), '/', respondentID, '.csv', sep='')
+path<- paste(here::here('survey', 'pilot4', 'survey', 'tripsAll'), '/', respondentID, '.csv', sep='')
 doe <- fread(path)
 
 # Filter out the trips

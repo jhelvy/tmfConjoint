@@ -1,177 +1,177 @@
-x,y,label,node,line,labelType,respID,qID,altID,obsID,price,timeRange
-0,0,Start,0,0,Terminal,3788,1,1,22723,10,65 - 97 minutes
-0,-0.08333333333333333,"Walk
-(2 min)",0,0,Transit,3788,1,1,22723,10,65 - 97 minutes
-0,-0.16666666666666666,"Transfer
-(2 min wait)",1,1,Node,3788,1,1,22723,10,65 - 97 minutes
-0,-0.3333333333333333,Bus,0,0,Transit,3788,1,1,22723,10,65 - 97 minutes
-0,-0.5,Transfer,1,0,Node,3788,1,1,22723,10,65 - 97 minutes
-0,-0.6666666666666666,Walk,0,0,Transit,3788,1,1,22723,10,65 - 97 minutes
-0,-0.8333333333333333,"Transfer
-(10 min wait)",1,0,Node,3788,1,1,22723,10,65 - 97 minutes
-0,-0.9999999999999999,Bus,0,0,Transit,3788,1,1,22723,10,65 - 97 minutes
-0,-1.1666666666666667,Transfer,1,1,Node,3788,1,1,22723,10,65 - 97 minutes
-0,-1.25,"Walk
-(2 min)",0,0,Transit,3788,1,1,22723,10,65 - 97 minutes
-0,-1.3333333333333335,End,0,0,Terminal,3788,1,1,22723,10,65 - 97 minutes
+x,y,label,node,labelType,lineNodes,respID,qID,altID,obsID,price,timeRange
+0,0,Start,0,Terminal,0,3788,1,1,22723,10,65 - 97 minutes
+0,-0.06,"Walk
+(2 min)",0,Transit,0,3788,1,1,22723,10,65 - 97 minutes
+0,-0.12,"Transfer
+(2 min wait)",1,Node,2,3788,1,1,22723,10,65 - 97 minutes
+0,-0.2844897959183673,Bus,0,Transit,2,3788,1,1,22723,10,65 - 97 minutes
+0,-0.4489795918367347,Transfer,1,Node,2,3788,1,1,22723,10,65 - 97 minutes
+0,-0.5,Walk,0,Transit,0,3788,1,1,22723,10,65 - 97 minutes
+0,-0.5510204081632654,"Transfer
+(10 min wait)",1,Node,3,3788,1,1,22723,10,65 - 97 minutes
+0,-0.7155102040816327,Bus,0,Transit,3,3788,1,1,22723,10,65 - 97 minutes
+0,-0.88,Transfer,1,Node,3,3788,1,1,22723,10,65 - 97 minutes
+0,-0.94,"Walk
+(2 min)",0,Transit,0,3788,1,1,22723,10,65 - 97 minutes
+0,-1,End,0,Terminal,0,3788,1,1,22723,10,65 - 97 minutes
 0,0,"Start
-(10 min wait)",0,1,Terminal,3788,1,2,22723,15,57 - 63 minutes
-0,-0.5,Taxi,0,0,Transit,3788,1,2,22723,15,57 - 63 minutes
-0,-1,End,0,1,Terminal,3788,1,2,22723,15,57 - 63 minutes
-0,0,Start,0,0,Terminal,3788,1,3,22723,10,31 - 47 minutes
-0,-0.125,"Walk
-(5 min)",0,0,Transit,3788,1,3,22723,10,31 - 47 minutes
-0,-0.25,"Transfer
-(10 min wait)",1,1,Node,3788,1,3,22723,10,31 - 47 minutes
-0,-0.5,Bus,0,0,Transit,3788,1,3,22723,10,31 - 47 minutes
-0,-0.75,"Transfer
-(2 min wait)",1,0,Node,3788,1,3,22723,10,31 - 47 minutes
-0,-1,Bus,0,0,Transit,3788,1,3,22723,10,31 - 47 minutes
-0,-1.25,Transfer,1,1,Node,3788,1,3,22723,10,31 - 47 minutes
-0,-1.375,"Walk
-(2 min)",0,0,Transit,3788,1,3,22723,10,31 - 47 minutes
-0,-1.5,End,0,0,Terminal,3788,1,3,22723,10,31 - 47 minutes
-0,0,Start,0,0,Terminal,3788,2,1,22724,25,50 - 74 minutes
-0,-0.08333333333333333,"Walk
-(5 min)",0,0,Transit,3788,2,1,22724,25,50 - 74 minutes
-0,-0.16666666666666666,"Transfer
-(5 min wait)",1,1,Node,3788,2,1,22724,25,50 - 74 minutes
-0,-0.3333333333333333,Bus,0,0,Transit,3788,2,1,22724,25,50 - 74 minutes
-0,-0.5,Transfer,1,0,Node,3788,2,1,22724,25,50 - 74 minutes
-0,-0.6666666666666666,Walk,0,0,Transit,3788,2,1,22724,25,50 - 74 minutes
-0,-0.8333333333333333,"Transfer
-(5 min wait)",1,0,Node,3788,2,1,22724,25,50 - 74 minutes
-0,-0.9999999999999999,Bus,0,0,Transit,3788,2,1,22724,25,50 - 74 minutes
-0,-1.1666666666666667,Transfer,1,1,Node,3788,2,1,22724,25,50 - 74 minutes
-0,-1.25,"Walk
-(5 min)",0,0,Transit,3788,2,1,22724,25,50 - 74 minutes
-0,-1.3333333333333335,End,0,0,Terminal,3788,2,1,22724,25,50 - 74 minutes
+(10 min wait)",0,Terminal,1,3788,1,2,22723,15,57 - 63 minutes
+0,-0.5,Taxi,0,Transit,1,3788,1,2,22723,15,57 - 63 minutes
+0,-1,End,0,Terminal,1,3788,1,2,22723,15,57 - 63 minutes
+0,0,Start,0,Terminal,0,3788,1,3,22723,10,31 - 47 minutes
+0,-0.09259259259259259,"Walk
+(5 min)",0,Transit,0,3788,1,3,22723,10,31 - 47 minutes
+0,-0.18518518518518517,"Transfer
+(10 min wait)",1,Node,2,3788,1,3,22723,10,31 - 47 minutes
+0,-0.37037037037037035,Bus,0,Transit,2,3788,1,3,22723,10,31 - 47 minutes
+0,-0.5555555555555556,"Transfer
+(2 min wait)",1,Node,2,3788,1,3,22723,10,31 - 47 minutes
+0,-0.7177777777777778,Bus,0,Transit,2,3788,1,3,22723,10,31 - 47 minutes
+0,-0.88,Transfer,1,Node,2,3788,1,3,22723,10,31 - 47 minutes
+0,-0.94,"Walk
+(2 min)",0,Transit,0,3788,1,3,22723,10,31 - 47 minutes
+0,-1,End,0,Terminal,0,3788,1,3,22723,10,31 - 47 minutes
+0,0,Start,0,Terminal,0,3788,2,1,22724,25,50 - 74 minutes
+0,-0.0646551724137931,"Walk
+(5 min)",0,Transit,0,3788,2,1,22724,25,50 - 74 minutes
+0,-0.1293103448275862,"Transfer
+(5 min wait)",1,Node,2,3788,2,1,22724,25,50 - 74 minutes
+0,-0.3017241379310345,Bus,0,Transit,2,3788,2,1,22724,25,50 - 74 minutes
+0,-0.4741379310344827,Transfer,1,Node,2,3788,2,1,22724,25,50 - 74 minutes
+0,-0.4999999999999999,Walk,0,Transit,0,3788,2,1,22724,25,50 - 74 minutes
+0,-0.5258620689655171,"Transfer
+(5 min wait)",1,Node,3,3788,2,1,22724,25,50 - 74 minutes
+0,-0.6982758620689654,Bus,0,Transit,3,3788,2,1,22724,25,50 - 74 minutes
+0,-0.8706896551724137,Transfer,1,Node,3,3788,2,1,22724,25,50 - 74 minutes
+0,-0.9353448275862069,"Walk
+(5 min)",0,Transit,0,3788,2,1,22724,25,50 - 74 minutes
+0,-0.9999999999999999,End,0,Terminal,0,3788,2,1,22724,25,50 - 74 minutes
 0,0,"Start
-(2 min wait)",0,1,Terminal,3788,2,2,22724,10,33 - 41 minutes
-0,-0.25,Uber/Lyft,0,0,Transit,3788,2,2,22724,10,33 - 41 minutes
+(2 min wait)",0,Terminal,1,3788,2,2,22724,10,33 - 41 minutes
+0,-0.2,Uber/Lyft,0,Transit,1,3788,2,2,22724,10,33 - 41 minutes
+0,-0.4,"Transfer
+(10 min wait)",1,Node,1,3788,2,2,22724,10,33 - 41 minutes
+0,-0.6000000000000001,Bus,0,Transit,1,3788,2,2,22724,10,33 - 41 minutes
+0,-0.8,Transfer,1,Node,1,3788,2,2,22724,10,33 - 41 minutes
+0,-0.9,"Walk
+(5 min)",0,Transit,0,3788,2,2,22724,10,33 - 41 minutes
+0,-1,End,0,Terminal,0,3788,2,2,22724,10,33 - 41 minutes
+0,0,"Start
+(5 min wait)",0,Terminal,1,3788,2,3,22724,15,54 - 66 minutes
+0,-0.2222222222222222,Uber/Lyft,0,Transit,1,3788,2,3,22724,15,54 - 66 minutes
+0,-0.4444444444444444,"Transfer
+(10 min wait)",1,Node,1,3788,2,3,22724,15,54 - 66 minutes
+0,-0.6622222222222223,Bus,0,Transit,1,3788,2,3,22724,15,54 - 66 minutes
+0,-0.88,Transfer,1,Node,1,3788,2,3,22724,15,54 - 66 minutes
+0,-0.94,"Walk
+(5 min)",0,Transit,0,3788,2,3,22724,15,54 - 66 minutes
+0,-1,End,0,Terminal,0,3788,2,3,22724,15,54 - 66 minutes
+0,0,"Start
+(10 min wait)",0,Terminal,1,3788,3,1,22725,10,54 - 80 minutes
+0,-0.2403846153846154,Uber/Lyft,0,Transit,1,3788,3,1,22725,10,54 - 80 minutes
+0,-0.4807692307692308,"Transfer
+(5 min wait)",1,Node,1,3788,3,1,22725,10,54 - 80 minutes
+0,-0.6803846153846154,Bus,0,Transit,1,3788,3,1,22725,10,54 - 80 minutes
+0,-0.88,Transfer,1,Node,1,3788,3,1,22725,10,54 - 80 minutes
+0,-0.94,"Walk
+(2 min)",0,Transit,0,3788,3,1,22725,10,54 - 80 minutes
+0,-1,End,0,Terminal,0,3788,3,1,22725,10,54 - 80 minutes
+0,0,"Start
+(10 min wait)",0,Terminal,1,3788,3,2,22725,30,36 - 44 minutes
+0,-0.5,Uber/Lyft,0,Transit,1,3788,3,2,22725,30,36 - 44 minutes
+0,-1,End,0,Terminal,1,3788,3,2,22725,30,36 - 44 minutes
+0,0,"Start
+(10 min wait)",0,Terminal,1,3788,3,3,22725,15,86 - 94 minutes
+0,-0.15625,Taxi,0,Transit,1,3788,3,3,22725,15,86 - 94 minutes
+0,-0.3125,Transfer,1,Node,1,3788,3,3,22725,15,86 - 94 minutes
+0,-0.40625,Walk,0,Transit,0,3788,3,3,22725,15,86 - 94 minutes
 0,-0.5,"Transfer
-(10 min wait)",1,0,Node,3788,2,2,22724,10,33 - 41 minutes
-0,-0.75,Bus,0,0,Transit,3788,2,2,22724,10,33 - 41 minutes
-0,-1,Transfer,1,1,Node,3788,2,2,22724,10,33 - 41 minutes
-0,-1.125,"Walk
-(5 min)",0,0,Transit,3788,2,2,22724,10,33 - 41 minutes
-0,-1.25,End,0,0,Terminal,3788,2,2,22724,10,33 - 41 minutes
+(10 min wait)",1,Node,2,3788,3,3,22725,15,86 - 94 minutes
+0,-0.65625,Bus,0,Transit,2,3788,3,3,22725,15,86 - 94 minutes
+0,-0.8125,Transfer,1,Node,2,3788,3,3,22725,15,86 - 94 minutes
+0,-0.90625,"Walk
+(10 min)",0,Transit,0,3788,3,3,22725,15,86 - 94 minutes
+0,-1,End,0,Terminal,0,3788,3,3,22725,15,86 - 94 minutes
 0,0,"Start
-(5 min wait)",0,1,Terminal,3788,2,3,22724,15,54 - 66 minutes
-0,-0.25,Uber/Lyft,0,0,Transit,3788,2,3,22724,15,54 - 66 minutes
-0,-0.5,"Transfer
-(10 min wait)",1,0,Node,3788,2,3,22724,15,54 - 66 minutes
-0,-0.75,Bus,0,0,Transit,3788,2,3,22724,15,54 - 66 minutes
-0,-1,Transfer,1,1,Node,3788,2,3,22724,15,54 - 66 minutes
-0,-1.125,"Walk
-(5 min)",0,0,Transit,3788,2,3,22724,15,54 - 66 minutes
-0,-1.25,End,0,0,Terminal,3788,2,3,22724,15,54 - 66 minutes
+(2 min wait)",0,Terminal,1,3788,4,1,22726,20,40 - 44 minutes
+0,-0.5,Taxi,0,Transit,1,3788,4,1,22726,20,40 - 44 minutes
+0,-1,End,0,Terminal,1,3788,4,1,22726,20,40 - 44 minutes
 0,0,"Start
-(10 min wait)",0,1,Terminal,3788,3,1,22725,10,54 - 80 minutes
-0,-0.25,Uber/Lyft,0,0,Transit,3788,3,1,22725,10,54 - 80 minutes
-0,-0.5,"Transfer
-(5 min wait)",1,0,Node,3788,3,1,22725,10,54 - 80 minutes
-0,-0.75,Bus,0,0,Transit,3788,3,1,22725,10,54 - 80 minutes
-0,-1,Transfer,1,1,Node,3788,3,1,22725,10,54 - 80 minutes
-0,-1.125,"Walk
-(2 min)",0,0,Transit,3788,3,1,22725,10,54 - 80 minutes
-0,-1.25,End,0,0,Terminal,3788,3,1,22725,10,54 - 80 minutes
+(10 min wait)",0,Terminal,1,3788,4,2,22726,10,81 - 99 minutes
+0,-0.21428571428571427,Taxi,0,Transit,1,3788,4,2,22726,10,81 - 99 minutes
+0,-0.42857142857142855,"Transfer
+(10 min wait)",1,Node,1,3788,4,2,22726,10,81 - 99 minutes
+0,-0.6428571428571428,Bus,0,Transit,1,3788,4,2,22726,10,81 - 99 minutes
+0,-0.8571428571428571,Transfer,1,Node,1,3788,4,2,22726,10,81 - 99 minutes
+0,-0.9285714285714286,"Walk
+(10 min)",0,Transit,0,3788,4,2,22726,10,81 - 99 minutes
+0,-1,End,0,Terminal,0,3788,4,2,22726,10,81 - 99 minutes
+0,0,Start,0,Terminal,0,3788,4,3,22726,25,38 - 46 minutes
+0,-0.07142857142857142,"Walk
+(5 min)",0,Transit,0,3788,4,3,22726,25,38 - 46 minutes
+0,-0.14285714285714285,"Transfer
+(5 min wait)",1,Node,2,3788,4,3,22726,25,38 - 46 minutes
+0,-0.2857142857142857,Bus,0,Transit,2,3788,4,3,22726,25,38 - 46 minutes
+0,-0.42857142857142855,"Transfer
+(2 min wait)",1,Node,2,3788,4,3,22726,25,38 - 46 minutes
+0,-0.5714285714285714,Bus,0,Transit,2,3788,4,3,22726,25,38 - 46 minutes
+0,-0.7142857142857142,Transfer,1,Node,2,3788,4,3,22726,25,38 - 46 minutes
+0,-0.8571428571428571,"Walk
+(10 min)",0,Transit,0,3788,4,3,22726,25,38 - 46 minutes
+0,-1,End,0,Terminal,0,3788,4,3,22726,25,38 - 46 minutes
 0,0,"Start
-(10 min wait)",0,1,Terminal,3788,3,2,22725,30,36 - 44 minutes
-0,-0.5,Uber/Lyft,0,0,Transit,3788,3,2,22725,30,36 - 44 minutes
-0,-1,End,0,1,Terminal,3788,3,2,22725,30,36 - 44 minutes
+(2 min wait)",0,Terminal,1,3788,5,1,22727,15,47 - 71 minutes
+0,-0.22727272727272727,Uber/Lyft,0,Transit,1,3788,5,1,22727,15,47 - 71 minutes
+0,-0.45454545454545453,"Transfer
+(2 min wait)",1,Node,1,3788,5,1,22727,15,47 - 71 minutes
+0,-0.6672727272727272,Bus,0,Transit,1,3788,5,1,22727,15,47 - 71 minutes
+0,-0.88,Transfer,1,Node,1,3788,5,1,22727,15,47 - 71 minutes
+0,-0.94,"Walk
+(5 min)",0,Transit,0,3788,5,1,22727,15,47 - 71 minutes
+0,-1,End,0,Terminal,0,3788,5,1,22727,15,47 - 71 minutes
 0,0,"Start
-(10 min wait)",0,1,Terminal,3788,3,3,22725,15,86 - 94 minutes
-0,-0.16666666666666666,Taxi,0,0,Transit,3788,3,3,22725,15,86 - 94 minutes
-0,-0.3333333333333333,Transfer,1,0,Node,3788,3,3,22725,15,86 - 94 minutes
-0,-0.5,Walk,0,0,Transit,3788,3,3,22725,15,86 - 94 minutes
-0,-0.6666666666666666,"Transfer
-(10 min wait)",1,0,Node,3788,3,3,22725,15,86 - 94 minutes
-0,-0.8333333333333333,Bus,0,0,Transit,3788,3,3,22725,15,86 - 94 minutes
-0,-1,Transfer,1,1,Node,3788,3,3,22725,15,86 - 94 minutes
-0,-1.0833333333333333,"Walk
-(10 min)",0,0,Transit,3788,3,3,22725,15,86 - 94 minutes
-0,-1.1666666666666667,End,0,0,Terminal,3788,3,3,22725,15,86 - 94 minutes
+(2 min wait)",0,Terminal,1,3788,5,2,22727,10,39 - 59 minutes
+0,-0.23809523809523808,Taxi,0,Transit,1,3788,5,2,22727,10,39 - 59 minutes
+0,-0.47619047619047616,"Transfer
+(5 min wait)",1,Node,1,3788,5,2,22727,10,39 - 59 minutes
+0,-0.6780952380952381,Bus,0,Transit,1,3788,5,2,22727,10,39 - 59 minutes
+0,-0.88,Transfer,1,Node,1,3788,5,2,22727,10,39 - 59 minutes
+0,-0.94,"Walk
+(2 min)",0,Transit,0,3788,5,2,22727,10,39 - 59 minutes
+0,-1,End,0,Terminal,0,3788,5,2,22727,10,39 - 59 minutes
+0,0,Start,0,Terminal,0,3788,5,3,22727,30,40 - 44 minutes
+0,-0.06,"Walk
+(2 min)",0,Transit,0,3788,5,3,22727,30,40 - 44 minutes
+0,-0.12,"Transfer
+(10 min wait)",1,Node,2,3788,5,3,22727,30,40 - 44 minutes
+0,-0.40375,Bus,0,Transit,2,3788,5,3,22727,30,40 - 44 minutes
+0,-0.6875,Transfer,1,Node,2,3788,5,3,22727,30,40 - 44 minutes
+0,-0.84375,"Walk
+(10 min)",0,Transit,0,3788,5,3,22727,30,40 - 44 minutes
+0,-1,End,0,Terminal,0,3788,5,3,22727,30,40 - 44 minutes
 0,0,"Start
-(2 min wait)",0,1,Terminal,3788,4,1,22726,20,40 - 44 minutes
-0,-0.5,Taxi,0,0,Transit,3788,4,1,22726,20,40 - 44 minutes
-0,-1,End,0,1,Terminal,3788,4,1,22726,20,40 - 44 minutes
+(10 min wait)",0,Terminal,1,3788,6,1,22728,30,62 - 92 minutes
+0,-0.1724137931034483,Uber/Lyft,0,Transit,1,3788,6,1,22728,30,62 - 92 minutes
+0,-0.3448275862068966,Transfer,1,Node,1,3788,6,1,22728,30,62 - 92 minutes
+0,-0.39655172413793105,Walk,0,Transit,0,3788,6,1,22728,30,62 - 92 minutes
+0,-0.4482758620689655,"Transfer
+(2 min wait)",1,Node,2,3788,6,1,22728,30,62 - 92 minutes
+0,-0.6206896551724138,Bus,0,Transit,2,3788,6,1,22728,30,62 - 92 minutes
+0,-0.7931034482758621,Transfer,1,Node,2,3788,6,1,22728,30,62 - 92 minutes
+0,-0.896551724137931,"Walk
+(10 min)",0,Transit,0,3788,6,1,22728,30,62 - 92 minutes
+0,-1,End,0,Terminal,0,3788,6,1,22728,30,62 - 92 minutes
+0,0,Start,0,Terminal,0,3788,6,2,22728,25,37 - 55 minutes
+0,-0.06,"Walk
+(2 min)",0,Transit,0,3788,6,2,22728,25,37 - 55 minutes
+0,-0.12,"Transfer
+(2 min wait)",1,Node,2,3788,6,2,22728,25,37 - 55 minutes
+0,-0.5,Bus,0,Transit,2,3788,6,2,22728,25,37 - 55 minutes
+0,-0.88,Transfer,1,Node,2,3788,6,2,22728,25,37 - 55 minutes
+0,-0.94,"Walk
+(2 min)",0,Transit,0,3788,6,2,22728,25,37 - 55 minutes
+0,-1,End,0,Terminal,0,3788,6,2,22728,25,37 - 55 minutes
 0,0,"Start
-(10 min wait)",0,1,Terminal,3788,4,2,22726,10,81 - 99 minutes
-0,-0.25,Taxi,0,0,Transit,3788,4,2,22726,10,81 - 99 minutes
-0,-0.5,"Transfer
-(10 min wait)",1,0,Node,3788,4,2,22726,10,81 - 99 minutes
-0,-0.75,Bus,0,0,Transit,3788,4,2,22726,10,81 - 99 minutes
-0,-1,Transfer,1,1,Node,3788,4,2,22726,10,81 - 99 minutes
-0,-1.125,"Walk
-(10 min)",0,0,Transit,3788,4,2,22726,10,81 - 99 minutes
-0,-1.25,End,0,0,Terminal,3788,4,2,22726,10,81 - 99 minutes
-0,0,Start,0,0,Terminal,3788,4,3,22726,25,38 - 46 minutes
-0,-0.125,"Walk
-(5 min)",0,0,Transit,3788,4,3,22726,25,38 - 46 minutes
-0,-0.25,"Transfer
-(5 min wait)",1,1,Node,3788,4,3,22726,25,38 - 46 minutes
-0,-0.5,Bus,0,0,Transit,3788,4,3,22726,25,38 - 46 minutes
-0,-0.75,"Transfer
-(2 min wait)",1,0,Node,3788,4,3,22726,25,38 - 46 minutes
-0,-1,Bus,0,0,Transit,3788,4,3,22726,25,38 - 46 minutes
-0,-1.25,Transfer,1,1,Node,3788,4,3,22726,25,38 - 46 minutes
-0,-1.375,"Walk
-(10 min)",0,0,Transit,3788,4,3,22726,25,38 - 46 minutes
-0,-1.5,End,0,0,Terminal,3788,4,3,22726,25,38 - 46 minutes
-0,0,"Start
-(2 min wait)",0,1,Terminal,3788,5,1,22727,15,47 - 71 minutes
-0,-0.25,Uber/Lyft,0,0,Transit,3788,5,1,22727,15,47 - 71 minutes
-0,-0.5,"Transfer
-(2 min wait)",1,0,Node,3788,5,1,22727,15,47 - 71 minutes
-0,-0.75,Bus,0,0,Transit,3788,5,1,22727,15,47 - 71 minutes
-0,-1,Transfer,1,1,Node,3788,5,1,22727,15,47 - 71 minutes
-0,-1.125,"Walk
-(5 min)",0,0,Transit,3788,5,1,22727,15,47 - 71 minutes
-0,-1.25,End,0,0,Terminal,3788,5,1,22727,15,47 - 71 minutes
-0,0,"Start
-(2 min wait)",0,1,Terminal,3788,5,2,22727,10,39 - 59 minutes
-0,-0.25,Taxi,0,0,Transit,3788,5,2,22727,10,39 - 59 minutes
-0,-0.5,"Transfer
-(5 min wait)",1,0,Node,3788,5,2,22727,10,39 - 59 minutes
-0,-0.75,Bus,0,0,Transit,3788,5,2,22727,10,39 - 59 minutes
-0,-1,Transfer,1,1,Node,3788,5,2,22727,10,39 - 59 minutes
-0,-1.125,"Walk
-(2 min)",0,0,Transit,3788,5,2,22727,10,39 - 59 minutes
-0,-1.25,End,0,0,Terminal,3788,5,2,22727,10,39 - 59 minutes
-0,0,Start,0,0,Terminal,3788,5,3,22727,30,40 - 44 minutes
-0,-0.25,"Walk
-(2 min)",0,0,Transit,3788,5,3,22727,30,40 - 44 minutes
-0,-0.5,"Transfer
-(10 min wait)",1,1,Node,3788,5,3,22727,30,40 - 44 minutes
-0,-1,Bus,0,0,Transit,3788,5,3,22727,30,40 - 44 minutes
-0,-1.5,Transfer,1,1,Node,3788,5,3,22727,30,40 - 44 minutes
-0,-1.75,"Walk
-(10 min)",0,0,Transit,3788,5,3,22727,30,40 - 44 minutes
-0,-2,End,0,0,Terminal,3788,5,3,22727,30,40 - 44 minutes
-0,0,"Start
-(10 min wait)",0,1,Terminal,3788,6,1,22728,30,62 - 92 minutes
-0,-0.16666666666666666,Uber/Lyft,0,0,Transit,3788,6,1,22728,30,62 - 92 minutes
-0,-0.3333333333333333,Transfer,1,0,Node,3788,6,1,22728,30,62 - 92 minutes
-0,-0.5,Walk,0,0,Transit,3788,6,1,22728,30,62 - 92 minutes
-0,-0.6666666666666666,"Transfer
-(2 min wait)",1,0,Node,3788,6,1,22728,30,62 - 92 minutes
-0,-0.8333333333333333,Bus,0,0,Transit,3788,6,1,22728,30,62 - 92 minutes
-0,-1,Transfer,1,1,Node,3788,6,1,22728,30,62 - 92 minutes
-0,-1.0833333333333333,"Walk
-(10 min)",0,0,Transit,3788,6,1,22728,30,62 - 92 minutes
-0,-1.1666666666666667,End,0,0,Terminal,3788,6,1,22728,30,62 - 92 minutes
-0,0,Start,0,0,Terminal,3788,6,2,22728,25,37 - 55 minutes
-0,-0.25,"Walk
-(2 min)",0,0,Transit,3788,6,2,22728,25,37 - 55 minutes
-0,-0.5,"Transfer
-(2 min wait)",1,1,Node,3788,6,2,22728,25,37 - 55 minutes
-0,-1,Bus,0,0,Transit,3788,6,2,22728,25,37 - 55 minutes
-0,-1.5,Transfer,1,1,Node,3788,6,2,22728,25,37 - 55 minutes
-0,-1.75,"Walk
-(2 min)",0,0,Transit,3788,6,2,22728,25,37 - 55 minutes
-0,-2,End,0,0,Terminal,3788,6,2,22728,25,37 - 55 minutes
-0,0,"Start
-(2 min wait)",0,1,Terminal,3788,6,3,22728,25,50 - 74 minutes
-0,-0.5,Taxi,0,0,Transit,3788,6,3,22728,25,50 - 74 minutes
-0,-1,End,0,1,Terminal,3788,6,3,22728,25,50 - 74 minutes
+(2 min wait)",0,Terminal,1,3788,6,3,22728,25,50 - 74 minutes
+0,-0.5,Taxi,0,Transit,1,3788,6,3,22728,25,50 - 74 minutes
+0,-1,End,0,Terminal,1,3788,6,3,22728,25,50 - 74 minutes
