@@ -7,8 +7,6 @@ source(here::here('survey', 'pilot4', 'functions.R'))
 # List full set of possible modes in each trip leg
 car  <- c('Car', 'Car\n(Express Lane)')
 taxi <- c('Uber/Lyft', 'Taxi')
-bus1 <- c('Walk\n(2 min)|Bus', 'Walk\n(5 min)|Bus', 'Walk\n(10 min)|Bus')
-bus3 <- c('Bus|Walk\n(2 min)', 'Bus|Walk\n(5 min)', 'Bus|Walk\n(10 min)')
 bus  <- 'Bus'
 walk <- 'Walk'
 
@@ -46,7 +44,7 @@ ff <- as_tibble(expand.grid(
         lastLegMode = ifelse(
             numLegs == 1, as.character(leg1Mode), ifelse(
             numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
-        carInTrip     = (leg1Mode == 'Car'),
+        carInTrip     = str_detect(leg1Mode, 'Car'),
         expressInTrip = str_detect(leg1Mode, 'Express'),
         walkInTrip    = leg2Mode == 'Walk',
         busInTrip     = (leg1Mode == bus) | (leg2Mode == bus) |

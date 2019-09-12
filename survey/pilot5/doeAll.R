@@ -5,10 +5,8 @@ source(here::here('survey', 'pilot5', 'functions.R'))
 # Main DOE construction - randomized, stratified by number of trips and modes
 
 # List full set of possible modes in each trip leg
-car  <- c('Car', 'Car\n(Express Lane)')
+car  <- c('Car', 'Car\n(Express)')
 taxi <- c('Uber/Lyft', 'Taxi')
-bus1 <- c('Walk\n(2 min)|Bus', 'Walk\n(5 min)|Bus', 'Walk\n(10 min)|Bus')
-bus3 <- c('Bus|Walk\n(2 min)', 'Bus|Walk\n(5 min)', 'Bus|Walk\n(10 min)')
 bus  <- 'Bus'
 walk <- 'Walk'
 
@@ -17,16 +15,15 @@ ff <- as_tibble(expand.grid(
     leg1Mode       = c(car, taxi, bus),
     leg2Mode       = c('None', bus, walk),
     leg3Mode       = c('None', taxi, bus),
-    price          = c(10, 15, 20, 25, 30), # USD $
-    expressFee     = c(5, 10), # USD $
-    transitTime    = c(20, 30, 40, 50, 60), # Minutes for time in-transit
-    tripTimeUnc    = c(0.05, 0.1, 0.2), # Plus/minus % of total trip time
-    walkTimeStart  = c(2, 5, 10), # Minutes
-    walkTimeLeg    = c(2, 5, 10), # Minutes
-    walkTimeEnd    = c(2, 5, 10), # Minutes
+    leg1Time       = c(5, 10, 15), # Minutes
+    leg2Time       = c(5, 10, 15), # Minutes
+    leg3Time       = c(5, 10, 15), # Minutes
     transfer1Time  = c(2, 5, 10), # Minutes
     transfer2Time  = c(2, 5, 10), # Minutes
-    transfer3Time  = c(2, 5, 10))) %>%
+    transfer3Time  = c(2, 5, 10), # Minutes
+    price          = c(10, 15, 20, 25, 30), # USD $
+    expressFee     = c(5, 10), # USD $
+    tripTimeUnc    = c(0.05, 0.1, 0.2))) %>% # Plus/minus % of total trip time
     # If leg2Mode is "None", there can't be a leg 3
     filter(! ((leg2Mode == 'None') &
               (leg3Mode != 'None'))) %>%
@@ -46,7 +43,7 @@ ff <- as_tibble(expand.grid(
         lastLegMode = ifelse(
             numLegs == 1, as.character(leg1Mode), ifelse(
             numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
-        carInTrip     = (leg1Mode == 'Car'),
+        carInTrip     = str_detect(leg1Mode, 'Car'),
         expressInTrip = str_detect(leg1Mode, 'Express'),
         walkInTrip    = leg2Mode == 'Walk',
         busInTrip     = (leg1Mode == bus) | (leg2Mode == bus) |
@@ -54,21 +51,7 @@ ff <- as_tibble(expand.grid(
         taxiInTrip = (leg1Mode == 'Taxi') | (leg3Mode == 'Taxi'),
         uberInTrip = (leg1Mode == 'Uber/Lyft') | (leg3Mode == 'Uber/Lyft'),
         # You can only have an express lane fee for car modes
-        expressFee = ifelse(str_detect(leg1Mode, 'Car'), expressFee, 0),
-        # You only have a walkTimeLeg if the 2nd leg is walking
-        walkTimeLeg = ifelse(walkInTrip, walkTimeLeg, 0),
-        # You only walk at the start or end if first or last leg is a bus
-        walkTimeStart = ifelse(
-            (busInTrip == F) | (leg1Mode != bus), 0, walkTimeStart),
-        walkTimeEnd = ifelse(
-            (busInTrip == F) | (lastLegMode != bus), 0, walkTimeEnd),
-        # You only have a transfer wait for multi-leg taxi or bus trips
-        transfer1Time = ifelse(
-            leg1Mode %in% c(bus, taxi), transfer1Time, 0),
-        transfer2Time = ifelse(
-            leg2Mode == bus, transfer2Time, 0),
-        transfer3Time = ifelse(
-            leg3Mode %in% c(bus, taxi), transfer3Time, 0)) %>%
+        expressFee = ifelse(str_detect(leg1Mode, 'Car'), expressFee, 0)) %>%
     distinct()
 ff$rowID <- seq(nrow(ff))
 
