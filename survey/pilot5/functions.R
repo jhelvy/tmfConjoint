@@ -1,5 +1,6 @@
 library(tidyverse)
 library(ggrepel)
+library(rlang)
 library(data.table)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
@@ -8,10 +9,11 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
 # Plot a comparison of the full factorial and doe counts
 barCompare <- function(df, var) {
+    df$var <- unlist(df[var])
     df %>%
         group_by(design) %>%
-        count({{var}}) %>%
-        ggplot(aes(x={{var}}, y=n)) +
+        count(var) %>%
+        ggplot(aes(x=var, y=n)) +
         geom_bar(stat='identity', position='dodge') +
         facet_wrap(~design)
 }
