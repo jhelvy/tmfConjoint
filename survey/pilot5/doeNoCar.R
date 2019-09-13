@@ -25,19 +25,26 @@ ff <- as_tibble(expand.grid(
     price         = c(10, 15, 20, 25, 30), # USD $
     tripTimeUnc   = c(0.05, 0.10, 0.20)) # Plus/minus % of total trip time
 ) %>%
-    # Filter out unrealistic or illogical cases 
+    # Filter out unrealistic or illogical cases
     filter(
         # If walking, maximum time is 15 minutes
         ! ((leg2Mode == walk) & (leg2Time > 15)),
         # If leg2Mode is "None", there can't be a leg 3
         ! ((leg2Mode == none) & (leg3Mode !=  none)),
         # Only walk in the 2nd leg if last leg is "None" or "Bus"
-        #     i.e. you wouldn't uber -> walk -> uber...you would just uber the 
-        #     whole way. 
+        #     i.e. you wouldn't uber -> walk -> uber...you would just uber the
+        #     whole way.
         ! ((leg2Mode == walk) & (! leg3Mode %in% c(bus, none))),
         # If you start with Uber, you wouldn't use a Taxi later, and vice versa
         ! ((leg1Mode == uber) & (leg3Mode == taxi)),
         ! ((leg1Mode == taxi) & (leg3Mode == taxi))
+    ) %>%
+    mutate(
+        # If leg 2 or 3 are None, then the leg times and transfer times are 0
+        leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
+        leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
+        transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
+        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time)
     ) %>%
     # Generate some useful variables
     mutate(
@@ -57,27 +64,18 @@ ff <- as_tibble(expand.grid(
     distinct()
 ff$rowID <- seq(nrow(ff))
 
-# Sample from ff to balance the numbers of trip legs and modes
+Sample from ff to balance the numbers of trip legs
 ids <- list(
-    bus_legs1     = which(ff$busInTrip & ff$numLegs == 1),
-    bus_legs2     = which(ff$busInTrip & ff$numLegs == 2),
-    bus_legs3     = which(ff$busInTrip & ff$numLegs == 3),
-    taxi_legs1    = which(ff$taxiInTrip & ff$numLegs == 1),
-    taxi_legs2    = which(ff$taxiInTrip & ff$numLegs == 2),
-    taxi_legs3    = which(ff$taxiInTrip & ff$numLegs == 3),
-    uber_legs1    = which(ff$uberInTrip & ff$numLegs == 1),
-    uber_legs2    = which(ff$uberInTrip & ff$numLegs == 2),
-    uber_legs3    = which(ff$uberInTrip & ff$numLegs == 3),
-    # walk_legs1    = which(ff$walkInTrip & ff$numLegs == 1), # Doesn't exist
-    walk_legs2    = which(ff$walkInTrip & ff$numLegs == 2),
-    walk_legs3    = which(ff$walkInTrip & ff$numLegs == 3) 
+    legs1 = which(ff$numLegs == 1),
+    legs2 = which(ff$numLegs == 2),
+    legs3 = which(ff$numLegs == 3)
 )
-numSamples <- 10000
+numSamples <- max(unlist(map(ids, length)))
 samples <- list()
 for (i in 1:length(ids)) {
     samples[[i]] <- sample(x=ids[[i]], size=numSamples, replace=T)
 }
-ff_bal <- ff[unlist(samples),]
+ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
 
 # Randomly sample from the ff_bal to evenly fit the desired sample size
 nResp        <- 6000 # Number of respondents
@@ -87,14 +85,16 @@ nRowsPerResp <- nAltsPerQ * nQPerResp
 nRows        <- nResp*nRowsPerResp
 doe <- ff_bal[sample(x=seq(nrow(ff_bal)), size=nRows, replace=T),]
 
-# Make sure no two identical alts appear in one question, and set meta data
-doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp) %>%
-    # Add additional variables for plotting
+# Make sure no two identical alts appear in one question
+doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp)
+
+# Add additional variables for plotting
+doe <- doe %>%
     mutate(
         trip = ifelse(
             numLegs == 1, paste(leg1Mode), ifelse(
-            numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
-            paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
+                numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
+                paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
         totalLegTime  = leg1Time + leg2Time + leg3Time,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalLegTime + totalWaitTime,
