@@ -65,18 +65,19 @@ removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
 # Functions for making the tripDfs
 addLegTimes <- function(trip, row) {
     legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
-    trip <- c('Start', trip, 'End')
-    time_i <- seq(length(transferTimes))
+    legTimes <- legTimes[1:row$numLegs]
+    time_i <- seq(length(legTimes))
     trip_i <- 2*time_i 
     for (i in time_i) {
         trip[trip_i[i]] = paste(
-            trip[trip_i[i]], '\n(', transferTimes[i], ' mins)', sep='')
+            trip[trip_i[i]], '\n(', legTimes[i], ' mins)', sep='')
     }
     return(trip)
 }
 
 addTransferTimes <- function(trip, row) {
     transferTimes <- row[c('transfer1Time', 'transfer2Time', 'transfer3Time')]
+    transferTimes <- transferTimes[1:row$numLegs]
     time_i <- seq(length(transferTimes))
     trip_i <- 2*time_i - 1
     # if (str_detect(trip[2], 'Walk')) {trip_i <- trip_i + 2}
@@ -91,7 +92,7 @@ addTransferTimes <- function(trip, row) {
 
 makeTripVector <- function(row) {
     trip <- str_replace_all(row$trip, '\\|', '|Transfer|')
-    trip <- str_split(trip, '\\|')[[1]]
+    trip <- c('Start', str_split(trip, '\\|')[[1]], 'End')
     trip <- addLegTimes(trip, row)
     trip <- addTransferTimes(trip, row)
     return(trip)
@@ -116,6 +117,7 @@ getPlotLineNodes <- function(tripDf) {
 
 getYSpacing <- function(trip, row) {
     legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
+    legTimes <- legTimes[1:row$numLegs]
     breaks  = cumsum(c(0, -1 * legTimes / sum(legTimes)))
     if (abs(breaks[2]) < 0.12) {
         breaks[2] = -0.12
