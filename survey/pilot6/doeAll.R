@@ -127,22 +127,22 @@ doe <- doe %>%
 # Save design
 write_csv(doe, here::here('survey', 'pilot6', 'survey', 'doeAll.csv'))
 
-# View summary plots of doe to check for mode and trip leg balance
-ff$design <- 'ff'
-plotDf <- doe %>%
-    mutate(design = 'doe') %>%
-    bind_rows(ff)
-
-# Relatively even balance in number of legs in each trip:
-barCompare(plotDf, 'numLegs')
-
-# Balance in leg modes
-barCompare(plotDf, 'leg1Mode')
-barCompare(plotDf, 'leg2Mode')
-barCompare(plotDf, 'leg3Mode')
-barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
-barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
-barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
+# # View summary plots of doe to check for mode and trip leg balance
+# ff$design <- 'ff'
+# plotDf <- doe %>%
+#     mutate(design = 'doe') %>%
+#     bind_rows(ff)
+# 
+# # Relatively even balance in number of legs in each trip:
+# barCompare(plotDf, 'numLegs')
+# 
+# # Balance in leg modes
+# barCompare(plotDf, 'leg1Mode')
+# barCompare(plotDf, 'leg2Mode')
+# barCompare(plotDf, 'leg3Mode')
+# barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
+# barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
+# barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
 
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips

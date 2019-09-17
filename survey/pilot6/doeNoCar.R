@@ -19,9 +19,6 @@ ff <- as_tibble(expand.grid(
     leg1Time      = c(10, 15, 20, 30, 40), # Minutes
     leg2Time      = c(3, 5, 10, 15, 20, 25), # Minutes
     leg3Time      = c(10, 15, 20, 25), # Minutes
-    leg1Time      = c(10, 15, 20, 30, 40), # Minutes
-    leg2Time      = c(3, 5, 10, 15, 20, 25), # Minutes
-    leg3Time      = c(10, 15, 20, 25), # Minutes
     transfer1Time = c(2, 5, 10), # Minutes
     transfer2Time = c(2, 5, 10), # Minutes
     transfer3Time = c(2, 5, 10), # Minutes
@@ -34,7 +31,7 @@ ff <- as_tibble(expand.grid(
         ! ((leg2Mode == walk) & (leg2Time > 15)),
         # If bus, minimum time is 10 minutes
         ! ((leg2Mode == bus) & (leg2Time < 10)),
-        # If not driving, max time for leg1 is 30 minutes 
+        # If not driving, max time for leg1 is 30 minutes
         ! ((leg1Mode == bus) & (leg1Time > 30)),
         ! ((leg1Mode == taxi) & (leg1Time > 30)),
         ! ((leg1Mode == uber) & (leg1Time > 30)),
@@ -54,7 +51,7 @@ ff <- as_tibble(expand.grid(
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
         transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
-        # If walking, no transfer time 
+        # If walking, no transfer time
         transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)
     ) %>%
     # Generate some useful variables
@@ -117,22 +114,22 @@ doe <- doe %>%
 # Save design
 write_csv(doe, here::here('survey', 'pilot6', 'survey', 'doeNoCar.csv'))
 
-# View summary plots of doe to check for mode and trip leg balance
-ff$design <- 'ff'
-plotDf <- doe %>%
-    mutate(design = 'doe') %>%
-    bind_rows(ff)
-
-# Relatively even balance in number of legs in each trip:
-barCompare(plotDf, 'numLegs')
-
-# Balance in leg modes
-barCompare(plotDf, 'leg1Mode')
-barCompare(plotDf, 'leg2Mode')
-barCompare(plotDf, 'leg3Mode')
-barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
-barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
-barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
+# # View summary plots of doe to check for mode and trip leg balance
+# ff$design <- 'ff'
+# plotDf <- doe %>%
+#     mutate(design = 'doe') %>%
+#     bind_rows(ff)
+# 
+# # Relatively even balance in number of legs in each trip:
+# barCompare(plotDf, 'numLegs')
+# 
+# # Balance in leg modes
+# barCompare(plotDf, 'leg1Mode')
+# barCompare(plotDf, 'leg2Mode')
+# barCompare(plotDf, 'leg3Mode')
+# barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
+# barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
+# barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
 
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips

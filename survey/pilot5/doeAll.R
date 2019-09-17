@@ -5,7 +5,7 @@ source(here::here('survey', 'pilot5', 'functions.R'))
 # Main DOE construction - randomized, stratified by number of trips and modes
 
 # Define modes
-carExpress <- 'Car-Express'
+carExpress <- 'Car: Express Lane'
 car  <- 'Car'
 uber <- 'Uber/Lyft'
 taxi <- 'Taxi'
@@ -18,9 +18,9 @@ ff <- as_tibble(expand.grid(
     leg1Mode      = c(car, carExpress, uber, taxi, bus),
     leg2Mode      = c(none, bus, walk),
     leg3Mode      = c(none, uber, taxi, bus),
-    leg1Time      = c(5, 10, 15, 20, 30, 40), # Minutes
-    leg2Time      = c(3, 5, 10, 15, 20, 30), # Minutes
-    leg3Time      = c(5, 10, 15, 20), # Minutes
+    leg1Time      = c(10, 15, 20, 30, 40), # Minutes
+    leg2Time      = c(3, 5, 10, 15, 20, 25), # Minutes
+    leg3Time      = c(10, 15, 20, 25), # Minutes
     transfer1Time = c(2, 5, 10), # Minutes
     transfer2Time = c(2, 5, 10), # Minutes
     transfer3Time = c(2, 5, 10), # Minutes
@@ -36,6 +36,12 @@ ff <- as_tibble(expand.grid(
         ! ((leg1Mode %in% c(car, carExpress)) & (leg1Time < 10)),
         # If walking, maximum time is 15 minutes
         ! ((leg2Mode == walk) & (leg2Time > 15)),
+        # If bus, minimum time is 10 minutes
+        ! ((leg2Mode == bus) & (leg2Time < 10)),
+        # If not driving, max time for leg1 is 30 minutes
+        ! ((leg1Mode == bus) & (leg1Time > 30)),
+        ! ((leg1Mode == taxi) & (leg1Time > 30)),
+        ! ((leg1Mode == uber) & (leg1Time > 30)),
         # If leg2Mode is "None", there can't be a leg 3
         ! ((leg2Mode == none) & (leg3Mode !=  none)),
         # Only walk in the 2nd leg if last leg is "None" or "Bus"
@@ -47,12 +53,15 @@ ff <- as_tibble(expand.grid(
         ! ((leg1Mode == taxi) & (leg3Mode == taxi))
     ) %>%
     mutate(
+        # If driving, there's no transfer time at the start
+        transfer1Time = ifelse(
+            leg1Mode %in% c(car, carExpress), 0, transfer1Time),
         # If leg 2 or 3 are None, then the leg times and transfer times are 0
         leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
         transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
-        # If walking, no transfer time 
+        # If walking, no transfer time
         transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)
     ) %>%
     # Generate some useful variables
@@ -118,22 +127,22 @@ doe <- doe %>%
 # Save design
 write_csv(doe, here::here('survey', 'pilot5', 'survey', 'doeAll.csv'))
 
-# View summary plots of doe to check for mode and trip leg balance
-ff$design <- 'ff'
-plotDf <- doe %>%
-    mutate(design = 'doe') %>%
-    bind_rows(ff)
-
-# Relatively even balance in number of legs in each trip:
-barCompare(plotDf, 'numLegs')
-
-# Balance in leg modes
-barCompare(plotDf, 'leg1Mode')
-barCompare(plotDf, 'leg2Mode')
-barCompare(plotDf, 'leg3Mode')
-barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
-barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
-barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
+# # View summary plots of doe to check for mode and trip leg balance
+# ff$design <- 'ff'
+# plotDf <- doe %>%
+#     mutate(design = 'doe') %>%
+#     bind_rows(ff)
+# 
+# # Relatively even balance in number of legs in each trip:
+# barCompare(plotDf, 'numLegs')
+# 
+# # Balance in leg modes
+# barCompare(plotDf, 'leg1Mode')
+# barCompare(plotDf, 'leg2Mode')
+# barCompare(plotDf, 'leg3Mode')
+# barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
+# barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
+# barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
 
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips
