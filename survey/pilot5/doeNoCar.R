@@ -44,7 +44,9 @@ ff <- as_tibble(expand.grid(
         leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
-        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time)
+        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
+        # If walking, no transfer time 
+        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)
     ) %>%
     # Generate some useful variables
     mutate(
