@@ -72,16 +72,31 @@ ff <- as_tibble(expand.grid(
     distinct()
 ff$rowID <- seq(nrow(ff))
 
-Sample from ff to balance the numbers of trip legs
+# Sample from ff to balance the mode alternatives:
 ids <- list(
-    legs1 = which(ff$numLegs == 1),
-    legs2 = which(ff$numLegs == 2),
-    legs3 = which(ff$numLegs == 3)
+    walk1 = which(ff$walkInTrip & ff$numLegs == 1),
+    walk2 = which(ff$walkInTrip & ff$numLegs == 2),
+    walk3 = which(ff$walkInTrip & ff$numLegs == 3),
+    bus1  = which(ff$busInTrip & ff$numLegs == 1),
+    bus2  = which(ff$busInTrip & ff$numLegs == 2),
+    bus3  = which(ff$busInTrip & ff$numLegs == 3),
+    taxi1 = which(ff$taxiInTrip & ff$numLegs == 1),
+    taxi2 = which(ff$taxiInTrip & ff$numLegs == 2),
+    taxi3 = which(ff$taxiInTrip & ff$numLegs == 3),
+    uber1 = which(ff$uberInTrip & ff$numLegs == 1),
+    uber2 = which(ff$uberInTrip & ff$numLegs == 2),
+    uber3 = which(ff$uberInTrip & ff$numLegs == 3)
 )
-numSamples <- max(unlist(map(ids, length)))
-samples <- list()
+nAlts <- unlist(map(ids, length))
+numSamples <- rep(max(nAlts), length(ids))
+names(numSamples) <- names(nAlts)
+ids[which(nAlts == 0)] <- NULL
+# Adjust sampling for unbalanced modes
+unbalanced <- c('walk2', 'taxi1', 'uber1')
+numSamples[which(names(ids) %in% unbalanced)] <- max(nAlts)*1.5
+numSamples[which(names(ids) == 'walk2')] <- max(nAlts)*3
 for (i in 1:length(ids)) {
-    samples[[i]] <- sample(x=ids[[i]], size=numSamples, replace=T)
+    samples[[i]] <- sample(x=ids[[i]], size=numSamples[i], replace=T)
 }
 ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
 
@@ -114,32 +129,20 @@ doe <- doe %>%
 # Save design
 write_csv(doe, here::here('survey', 'pilot5', 'survey', 'doeNoCar.csv'))
 
-# # View summary plots of doe to check for mode and trip leg balance
-# ff$design <- 'ff'
-# plotDf <- doe %>%
-#     mutate(design = 'doe') %>%
-#     bind_rows(ff)
-# 
-# # Relatively even balance in number of legs in each trip:
-# barCompare(plotDf, 'numLegs')
-# 
-# # Balance in leg modes
-# barCompare(plotDf, 'leg1Mode')
-# barCompare(plotDf, 'leg2Mode')
-# barCompare(plotDf, 'leg3Mode')
-# barCompare(plotDf %>% filter(numLegs == 1), 'leg1Mode')
-# barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
-# barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
-
-doe %>% 
-    gather(mode, count, expressInTrip:uberInTrip) %>% 
-    select(mode, count) %>% 
-    count(mode, count) %>% 
-    mutate(percent = n / nrow(doe)) %>% 
-    filter(count == TRUE) %>% 
+# Compare balance of modes:
+doe %>%
+    gather(mode, count, walkInTrip:uberInTrip) %>%
+    select(mode, count) %>%
+    count(mode, count) %>%
+    mutate(percent = n / nrow(doe)) %>%
+    filter(count == TRUE) %>%
     ggplot() +
     geom_bar(aes(x = mode, y = percent), stat='identity')
-    
+
+# Compare balance of trip legs:
+doe %>%
+    ggplot() +
+    geom_bar(aes(x = numLegs))
 
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips
