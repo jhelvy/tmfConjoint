@@ -80,7 +80,6 @@ addTransferTimes <- function(trip, row) {
     transferTimes <- transferTimes[1:row$numLegs]
     time_i <- seq(length(transferTimes))
     trip_i <- 2*time_i - 1
-    # if (str_detect(trip[2], 'Walk')) {trip_i <- trip_i + 2}
     for (i in time_i) {
         if (transferTimes[i] > 0) {
             trip[trip_i[i]] = paste(

@@ -5,7 +5,7 @@ source(here::here('survey', 'pilot5', 'functions.R'))
 # Main DOE construction - randomized, stratified by number of trips and modes
 
 # Define modes
-carExpress <- 'Car: Express Lane'
+carExpress <- 'Car:\nExpress'
 car  <- 'Car'
 uber <- 'Uber/Lyft'
 taxi <- 'Taxi'

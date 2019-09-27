@@ -131,6 +131,16 @@ write_csv(doe, here::here('survey', 'pilot5', 'survey', 'doeNoCar.csv'))
 # barCompare(plotDf %>% filter(numLegs == 2), 'leg2Mode')
 # barCompare(plotDf %>% filter(numLegs == 3), 'leg3Mode')
 
+doe %>% 
+    gather(mode, count, expressInTrip:uberInTrip) %>% 
+    select(mode, count) %>% 
+    count(mode, count) %>% 
+    mutate(percent = n / nrow(doe)) %>% 
+    filter(count == TRUE) %>% 
+    ggplot() +
+    geom_bar(aes(x = mode, y = percent), stat='identity')
+    
+
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips
 

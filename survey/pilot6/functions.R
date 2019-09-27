@@ -76,10 +76,7 @@ getTimes <- function(row) {
         times <- c(times, transferTimes[i], legTimes[i])
     }
     # Remove cases where the transfer time is 0 
-    ids <- which(transferTimes == 0)
-    if (length(ids) > 0) {
-        times[ids] <- ''
-    }
+    times[which(times == '0 min wait')] <- 'Transfer'
     return(c(times, '')) # Added '' for the final END node
 }
 
