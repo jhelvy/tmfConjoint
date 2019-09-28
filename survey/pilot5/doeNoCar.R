@@ -87,19 +87,19 @@ ff <- as_tibble(expand.grid(
 ff$rowID <- seq(nrow(ff))
 
 # Sample from ff to balance the mode alternatives and legs:
-# First get the unique trip combinations 
-trips <- ff %>% 
-    distinct(trip, walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>% 
+# First get the unique trip combinations
+trips <- ff %>%
+    distinct(trip, walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>%
     mutate(
         taxi = ifelse(taxiInTrip | uberInTrip, T, F),
-        bus  = busInTrip, 
+        bus  = busInTrip,
         walk = walkInTrip
-    ) %>% 
+    ) %>%
     select(trip, numLegs, taxi, walk, bus)
 # Now add random samples from "trips" to balance it by mode and numLegs
 trips <- balanceTrips(
-    trips, 
-    modes = c('taxi', 'walk', 'bus'), 
+    trips,
+    modes = c('taxi', 'walk', 'bus'),
     thresholds = c('mode'=8, 'leg'=2))
 
 # Use the resulting proportions of unique trips to select rows for DOE
@@ -123,9 +123,9 @@ write_csv(doe, here::here('survey', 'pilot5', 'survey', 'doeNoCar.csv'))
 doe %>%
     mutate(
         taxi = ifelse(taxiInTrip | uberInTrip, T, F),
-        bus  = busInTrip, 
+        bus  = busInTrip,
         walk = walkInTrip
-    ) %>% 
+    ) %>%
     gather(mode, count, taxi:walk) %>%
     select(mode, count) %>%
     count(mode, count) %>%
