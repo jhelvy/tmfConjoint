@@ -34,11 +34,11 @@ ff <- as_tibble(expand.grid(
         ! ((leg1Mode %in% c(car, carExpress)) & (leg3Mode != none)),
         # If driving, minimum time is 10 minutes
         ! ((leg1Mode %in% c(car, carExpress)) & (leg1Time < 10)),
-        # If walking, maximum time is 15 minutes 
+        # If walking, maximum time is 15 minutes
         ! ((leg2Mode == walk) & (leg2Time > 15)),
         # If bus, minimum time is 10 minutes
         ! ((leg2Mode == bus) & (leg2Time < 10)),
-        # If not driving, max time for leg1 is 30 minutes 
+        # If not driving, max time for leg1 is 30 minutes
         ! ((leg1Mode == bus) & (leg1Time > 30)),
         ! ((leg1Mode == taxi) & (leg1Time > 30)),
         ! ((leg1Mode == uber) & (leg1Time > 30)),
@@ -53,7 +53,7 @@ ff <- as_tibble(expand.grid(
         ! ((leg1Mode == taxi) & (leg3Mode == taxi))
     ) %>%
     mutate(
-        # If driving, there's no transfer time at the start 
+        # If driving, there's no transfer time at the start
         transfer1Time = ifelse(
             leg1Mode %in% c(car, carExpress), 0, transfer1Time),
         # If leg 2 or 3 are None, then the leg times and transfer times are 0
@@ -61,7 +61,7 @@ ff <- as_tibble(expand.grid(
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
         transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
-        # If walking, no transfer time 
+        # If walking, no transfer time
         transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)
     ) %>%
     # Generate some useful variables
@@ -82,55 +82,9 @@ ff <- as_tibble(expand.grid(
         # You can only have an express lane fee for car modes
         expressFee = ifelse(carInTrip, expressFee, 0)
     ) %>%
-    distinct()
-ff$rowID <- seq(nrow(ff))
-
-# Sample from ff to balance the mode alternatives:
-ids <- list(
-    car1     = which(ff$carInTrip & ff$numLegs == 1),
-    car2     = which(ff$carInTrip & ff$numLegs == 2),
-    car3     = which(ff$carInTrip & ff$numLegs == 3),
-    express1 = which(ff$expressInTrip & ff$numLegs == 1),
-    express2 = which(ff$expressInTrip & ff$numLegs == 2),
-    express3 = which(ff$expressInTrip & ff$numLegs == 3),
-    walk1    = which(ff$walkInTrip & ff$numLegs == 1),
-    walk2    = which(ff$walkInTrip & ff$numLegs == 2),
-    walk3    = which(ff$walkInTrip & ff$numLegs == 3),
-    bus1     = which(ff$busInTrip & ff$numLegs == 1),
-    bus2     = which(ff$busInTrip & ff$numLegs == 2),
-    bus3     = which(ff$busInTrip & ff$numLegs == 3),
-    taxi1    = which(ff$taxiInTrip & ff$numLegs == 1),
-    taxi2    = which(ff$taxiInTrip & ff$numLegs == 2),
-    taxi3    = which(ff$taxiInTrip & ff$numLegs == 3),
-    uber1    = which(ff$uberInTrip & ff$numLegs == 1),
-    uber2    = which(ff$uberInTrip & ff$numLegs == 2),
-    uber3    = which(ff$uberInTrip & ff$numLegs == 3)
-)
-nAlts <- unlist(map(ids, length))
-numSamples <- rep(max(nAlts), length(ids))
-names(numSamples) <- names(nAlts)
-ids[which(nAlts == 0)] <- NULL
-# Adjust sampling for unbalanced modes
-unbalanced <- c('car1', 'car2', 'express1', 'express2', 'walk2', 'walk3')
-numSamples[which(names(ids) %in% unbalanced)] <- max(nAlts)*1.5
-for (i in 1:length(ids)) {
-    samples[[i]] <- sample(x=ids[[i]], size=numSamples[i], replace=T)
-}
-ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
-
-# Randomly sample from the ff_bal to evenly fit the desired sample size
-nResp        <- 6000 # Number of respondents
-nAltsPerQ    <- 3 # Number of alternatives per question
-nQPerResp    <- 6 # Number of questions per respondent
-nRowsPerResp <- nAltsPerQ * nQPerResp
-nRows        <- nResp*nRowsPerResp
-doe <- ff_bal[sample(x=seq(nrow(ff_bal)), size=nRows, replace=T),]
-
-# Make sure no two identical alts appear in one question
-doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp)
-
-# Add additional variables for plotting
-doe <- doe %>%
+    # Remove duplicates that may now be remaining
+    distinct() %>%
+    # Add additional variables for plotting
     mutate(
         trip = ifelse(
             numLegs == 1, paste(leg1Mode), ifelse(
@@ -143,22 +97,61 @@ doe <- doe %>%
         tripTimeMax = round(totalTripTime*(1 + tripTimeUnc)),
         tripTimeRange  = paste(
             tripTimeMin, '-', tripTimeMax, 'minutes', sep=' '))
+ff$rowID <- seq(nrow(ff))
+
+# Sample from ff to balance the mode alternatives and legs:
+# First get the unique trip combinations
+trips <- ff %>%
+    distinct(trip, carInTrip, expressInTrip,
+             walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>%
+    mutate(
+        car  = ifelse(carInTrip | expressInTrip, T, F),
+        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
+        bus  = busInTrip,
+        walk = walkInTrip
+    ) %>%
+    select(trip, numLegs, car, taxi, walk, bus)
+# Now add random samples from "trips" to balance it by mode and numLegs
+trips <- balanceTrips(
+    trips,
+    modes = c('car', 'taxi', 'walk', 'bus'),
+    thresholds = c('mode'=5, 'leg'=2))
+
+# Use the resulting proportions of unique trips to select rows for DOE
+ff_bal <- getBalancedFF(ff, trips)
+
+# Randomly sample from the ff_bal to evenly fit the desired sample size
+nResp        <- 6000 # Number of respondents
+nAltsPerQ    <- 3 # Number of alternatives per question
+nQPerResp    <- 6 # Number of questions per respondent
+nRowsPerResp <- nAltsPerQ * nQPerResp
+nRows        <- nResp*nRowsPerResp
+doe <- ff_bal[sample(x=seq(nrow(ff_bal)), size=nRows, replace=T),]
+
+# Make sure no two identical alts appear in one question
+doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp)
 
 # Save design
 write_csv(doe, here::here('survey', 'pilot6', 'survey', 'doeAll.csv'))
 
 # Compare balance of modes:
-doe %>% 
-    gather(mode, count, carInTrip:uberInTrip) %>% 
-    select(mode, count) %>% 
-    count(mode, count) %>% 
-    mutate(percent = n / nrow(doe)) %>% 
-    filter(count == TRUE) %>% 
+doe %>%
+    mutate(
+        car  = ifelse(carInTrip | expressInTrip, T, F),
+        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
+        bus  = busInTrip,
+        walk = walkInTrip
+    ) %>%
+    gather(mode, count, car:walk) %>%
+    select(mode, count) %>%
+    count(mode, count) %>%
+    mutate(percent = n / nrow(doe)) %>%
+    filter(count == TRUE) %>%
     ggplot() +
     geom_bar(aes(x = mode, y = percent), stat='identity')
 
 # Compare balance of trip legs:
-doe %>% 
+doe %>%
     ggplot() +
     geom_bar(aes(x = numLegs))
 

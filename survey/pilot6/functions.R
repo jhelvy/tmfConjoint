@@ -7,16 +7,68 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 # -----------------------------------------------------------------------------
 # Functions making the DOE
 
-# Plot a comparison of the full factorial and doe counts
-barCompare <- function(df, var) {
-    df$var <- unlist(df[var])
-    df %>%
-        group_by(design) %>%
-        count(var) %>%
-        mutate(percent = 100*(n / sum(n))) %>%
-        ggplot(aes(x=var, y=percent)) +
-        geom_bar(stat='identity', position='dodge') +
-        facet_wrap(~design)
+balanceTrips <- function(df, modes, thresholds) {
+    orig <- df
+    solution <- FALSE
+    while (solution == FALSE) {
+        result <- runTripLoop(trips, modes, thresholds)
+        solution <- result$solution
+    }
+    return(result$trips)
+}
+
+runTripLoop <- function(trips, modes, thresholds) {
+    count <- 0
+    diffs <- getDiffs(trips, modes)
+    while ((diffs['mode'] > thresholds['mode']) |
+           (diffs['leg'] > thresholds['leg'])) {
+        trips <- getNewTrips(trips, diffs, modes)
+        diffs <- getDiffs(trips, modes)
+        print(diffs)
+        print(nrow(trips))
+        count <- count + 1
+        if (count > 200) {
+            return(list(trips=trips, solution=FALSE))
+        }
+    }
+    return(list(trips=trips, solution=TRUE))
+}
+
+# Adds a random new row to the unique set of trips.
+# If the new row helps balance the mode and legs, keep it, otherwise
+# return the original df
+getNewTrips <- function(df, diffs, modes) {
+    row <- df[sample(seq(nrow(df)), 1),]
+    temp <- rbind(df, row)
+    newDiffs <- getDiffs(temp, modes)
+    if ((newDiffs['mode'] <  diffs['mode']) |
+        (newDiffs['leg'] < diffs['leg'])) {
+        return(temp)
+    }
+    return(df)
+}
+
+getDiffs <- function(df, modes) {
+    modeCounts <- apply(df[modes], 2, sum)
+    legCounts <- table(df$numLegs)
+    modeDiff <- max(max(modeCounts) - modeCounts)
+    legDiff <- max(max(legCounts) - legCounts)
+    return(c(mode = modeDiff, leg = legDiff))
+}
+
+getBalancedFF <- function (ff, trips) {
+    proportions <- trips %>% count(trip)
+    ids <- list()
+    for (i in 1:nrow(proportions)) {
+        ids[[i]] <- which(ff$trip == proportions$trip[i])
+    }
+    nAlts <- unlist(map(ids, length))
+    numSamples <- rep(max(nAlts), length(ids)) * proportions$n
+    samples <- list()
+    for (i in 1:length(ids)) {
+        samples[[i]] <- sample(x=ids[[i]], size=numSamples[i], replace=T)
+    }
+    ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
 }
 
 addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
@@ -31,12 +83,12 @@ addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
 getUniqueAltCounts <- function(doe) {
     temp <- doe %>%
         mutate(distinctTrip = paste(
-            leg1Mode, leg2Mode, leg3Mode, leg1Time, leg2Time, leg3Time, 
+            leg1Mode, leg2Mode, leg3Mode, leg1Time, leg2Time, leg3Time,
             transfer1Time, transfer2Time, transfer3Time, sep='|'))
     uniqueTrips <- unique(temp$distinctTrip)
     tripsDf <- data.frame(
-        distinctTrip = uniqueTrips, 
-        tripID = seq(length(uniqueTrips))) 
+        distinctTrip = uniqueTrips,
+        tripID = seq(length(uniqueTrips)))
     doe <- temp %>%
         left_join(tripsDf) %>%
         group_by(obsID) %>%
@@ -75,7 +127,7 @@ getTimes <- function(row) {
     for (i in 1:length(legTimes)) {
         times <- c(times, transferTimes[i], legTimes[i])
     }
-    # Remove cases where the transfer time is 0 
+    # Remove cases where the transfer time is 0
     times[which(times == '0 min wait')] <- 'Transfer'
     return(c(times, '')) # Added '' for the final END node
 }
