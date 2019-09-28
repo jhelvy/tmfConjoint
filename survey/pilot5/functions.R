@@ -8,7 +8,7 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 # Functions making the DOE
 
 balanceTrips <- function(df, modes, thresholds) {
-    orig <- df 
+    orig <- df
     solution <- FALSE
     while (solution == FALSE) {
         result <- runTripLoop(trips, modes, thresholds)
@@ -20,22 +20,20 @@ balanceTrips <- function(df, modes, thresholds) {
 runTripLoop <- function(trips, modes, thresholds) {
     count <- 0
     diffs <- getDiffs(trips, modes)
-    while ((diffs['mode'] > thresholds['mode']) | 
+    while ((diffs['mode'] > thresholds['mode']) |
            (diffs['leg'] > thresholds['leg'])) {
         trips <- getNewTrips(trips, diffs, modes)
         diffs <- getDiffs(trips, modes)
-        print(diffs)
-        print(nrow(trips))
-        count <- count + 1 
-        if (count > 200) { 
+        count <- count + 1
+        if (count > 200) {
             return(list(trips=trips, solution=FALSE))
         }
-    }    
+    }
     return(list(trips=trips, solution=TRUE))
 }
 
-# Adds a random new row to the unique set of trips. 
-# If the new row helps balance the mode and legs, keep it, otherwise 
+# Adds a random new row to the unique set of trips.
+# If the new row helps balance the mode and legs, keep it, otherwise
 # return the original df
 getNewTrips <- function(df, diffs, modes) {
     row <- df[sample(seq(nrow(df)), 1),]
@@ -52,7 +50,7 @@ getDiffs <- function(df, modes) {
     modeCounts <- apply(df[modes], 2, sum)
     legCounts <- table(df$numLegs)
     modeDiff <- max(max(modeCounts) - modeCounts)
-    legDiff <- max(max(legCounts) - legCounts)    
+    legDiff <- max(max(legCounts) - legCounts)
     return(c(mode = modeDiff, leg = legDiff))
 }
 
@@ -83,12 +81,12 @@ addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
 getUniqueAltCounts <- function(doe) {
     temp <- doe %>%
         mutate(distinctTrip = paste(
-            leg1Mode, leg2Mode, leg3Mode, leg1Time, leg2Time, leg3Time, 
+            leg1Mode, leg2Mode, leg3Mode, leg1Time, leg2Time, leg3Time,
             transfer1Time, transfer2Time, transfer3Time, sep='|'))
     uniqueTrips <- unique(temp$distinctTrip)
     tripsDf <- data.frame(
-        distinctTrip = uniqueTrips, 
-        tripID = seq(length(uniqueTrips))) 
+        distinctTrip = uniqueTrips,
+        tripID = seq(length(uniqueTrips)))
     doe <- temp %>%
         left_join(tripsDf) %>%
         group_by(obsID) %>%
@@ -119,7 +117,7 @@ addLegTimes <- function(trip, row) {
     legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
     legTimes <- legTimes[1:row$numLegs]
     time_i <- seq(length(legTimes))
-    trip_i <- 2*time_i 
+    trip_i <- 2*time_i
     for (i in time_i) {
         trip[trip_i[i]] = paste(
             trip[trip_i[i]], '\n(', legTimes[i], ' mins)', sep='')

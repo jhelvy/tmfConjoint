@@ -24,8 +24,6 @@ runTripLoop <- function(trips, modes, thresholds) {
            (diffs['leg'] > thresholds['leg'])) {
         trips <- getNewTrips(trips, diffs, modes)
         diffs <- getDiffs(trips, modes)
-        print(diffs)
-        print(nrow(trips))
         count <- count + 1
         if (count > 200) {
             return(list(trips=trips, solution=FALSE))
