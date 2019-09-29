@@ -172,8 +172,9 @@ for (i in 2:length(tripDfList)) {
     } else {
         # Save the tripDf
         tripDf <- do.call(rbind, temp)
-        write_csv(tripDf, here::here('survey', 'pilot6', 'survey', 'tripsNoCar',
-                                     paste(respID, '.csv', sep='')))
+        write_csv(tripDf, here::here(
+            'survey', 'pilot6', 'survey',
+            'tripsNoCar', paste(respID, '.csv', sep='')))
         # Start a new temp list
         respID <- trip$respID[1]
         index <- 2
