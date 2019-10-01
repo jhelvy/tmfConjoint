@@ -1,6 +1,7 @@
 library(here)
 source(here::here('survey', 'pilot7', 'functions.R'))
 library(mlogit)
+library(cowplot)
 
 # Load DOE from github (same process as formr will do)
 rootPath <- "https://raw.githubusercontent.com/jhelvy/tmfConjoint/master/survey/pilot7/survey/"
@@ -38,7 +39,7 @@ getTempDf <- function(doeAll, doeNoCar, size) {
     respIDs <- sample(seq(max(doeAll$respID)), size)
     tempDfAll <- doeAll[respID %in% respIDs]
     tempDfNoCar <- doeNoCar[respID %in% respIDs]
-    tempDf <-  bind_rows(tempDfAll, tempDfNoCar) 
+    tempDf <-  bind_rows(tempDfAll, tempDfNoCar)
     tempDf$obsID <- rep(seq(nrow(tempDf) / 3), each = 3)
     # Assign random choices
     choices <- sample(seq(3), max(tempDf$obsID), replace = TRUE)
@@ -47,44 +48,54 @@ getTempDf <- function(doeAll, doeNoCar, size) {
     return(tempDf)
 }
 
-# Set the sample sizes
-numResp <- seq(100, 3000, 300)
-for (size in numResp) {
-    tempDf <- getTempDf(doeAll, doeNoCar, size)
-    tempDf <- dummyCode(tempDf, vars = c('leg1Mode', 'leg2Mode', 'leg3Mode'))
+recodeTempDf <- function(tempDf) {
+    tempDf <- dummyCode(tempDf, vars = c(
+        'leg1Mode', 'leg2Mode', 'leg3Mode', 'numLegs'))
+    # Rename columns
+    colnames(tempDf) <- str_replace_all(colnames(tempDf), '\n', '')
+    colnames(tempDf) <- str_replace_all(colnames(tempDf), ':', '')
+    colnames(tempDf) <- str_replace_all(colnames(tempDf), '/', '')
     # Convert the data to "mlogit" format:
     tempDf = mlogit.data(
         data    = tempDf,
         shape   = 'long',
         choice  = 'choice',
         alt.var = 'altID')
-    # Run the model:
-    model_linear = mlogit(tempDf, formula = choice ~
-        leg1Mode_Car + leg1Mode_Car:\nExpress + leg1Mode_Taxi + 
-        leg1Mode_Uber/Lyft + 
-        leg2Mode_None + leg2Mode_Walk + 
-        leg3Mode_None + leg3Mode_Taxi + leg3Mode_Uber/Lyft +
-        leg1Time + leg2Time + leg3Time +
-        transfer1Time + transfer31Time + transfer3Time +
-        price + expressFee + tripTimeUnc | 0)   # Levels: 0, 1
-    
-    
-
-
-
-    
+    return(tempDf)
 }
 
+# ---------------------------------------------------------------------------
 
-# -----------------------------------------------------------------------------
-# Estimate MNL linear model:
+# Run models for different sample sizes
+numResp <- seq(100, 3000, 300)
+index <- 1
+models <- list()
+for (i in 1:length(numResp)) {
+    size <- numResp[i]
+    tempDf <- getTempDf(doeAll, doeNoCar, size)
+    tempDf <- recodeTempDf(tempDf)
+    # Run the model:
+    models[[i]] = mlogit(tempDf, formula = choice ~
+        price + expressFee + tripTimeUnc +
+        totalLegTime + totalWaitTime +
+        numLegs_2 + numLegs_3 +
+        leg1Mode_Car + leg1Mode_CarExpress + leg1Mode_Taxi + leg1Mode_UberLyft +
+        leg2Mode_Walk +
+        leg3Mode_Taxi + leg3Mode_UberLyft | 0)
+}
 
+# Get the standard errors out of the models
+coefs1 <- coef(models[[1]])
+se <- as.data.frame(matrix(0, ncol=length(coefs1) + 1, nrow=length(numResp)))
+colnames(se) <- c('size', names(coefs1))
+for (i in 1:length(models)) {
+    model <- models[[i]]
+    se[i, ] <- c(2*numResp[i], sqrt(abs(diag(solve(model$hessian)))))
+}
 
-
-# View summary of results
-# Check the 1st order condition: Is the gradient at the solution zero?
-summary(model_linear)
-
-# 2nd order condition: Is the hessian negative definite?
-# (If all the eigenvalues are negative, the hessian is negative definite)
-eigen(model_linear$hessian)$values
+# Plot results 
+se %>% 
+    gather(coef, se, price:leg3Mode_UberLyft) %>% 
+    ggplot(aes(x = size, y = se, color = coef)) + 
+    geom_line() + 
+    theme_cowplot()
