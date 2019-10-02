@@ -98,4 +98,5 @@ se %>%
     gather(coef, se, price:leg3Mode_UberLyft) %>% 
     ggplot(aes(x = size, y = se, color = coef)) + 
     geom_line() + 
-    theme_cowplot()
+    theme_cowplot() +
+    facet_wrap(~coef)
