@@ -1,6 +1,6 @@
 # setwd('/Users/jhelvy/gh/tmfConjoint/')
 
-:
+library(here)
 source(here::here('survey', 'pilot8', 'functions.R'))
 source(here::here('survey', 'pilot8', 'filterCases.R'))
 
