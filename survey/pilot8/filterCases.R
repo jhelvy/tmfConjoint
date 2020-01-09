@@ -72,13 +72,19 @@
 # NO 3-leg car trips - you would just drive to the end
 
 goodTrips <- c(
+    'Car',
+    'Car:\nExpress',
     'Bus',
     'Uber/Lyft',
     'Taxi',
+    'Car|Bus',
+    'Car:\nExpress|Bus',
     'Bus|Bus',
     'Walk|Bus',
     'Uber/Lyft|Bus',
     'Taxi|Bus',
+    'Car|Walk',
+    'Car:\nExpress|Walk',
     'Bus|Walk',
     'Uber/Lyft|Walk',
     'Taxi|Walk',

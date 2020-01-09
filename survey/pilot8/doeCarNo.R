@@ -1,6 +1,6 @@
 # setwd('/Users/jhelvy/gh/tmfConjoint/')
 
-library(here)
+:
 source(here::here('survey', 'pilot8', 'functions.R'))
 source(here::here('survey', 'pilot8', 'filterCases.R'))
 
@@ -34,44 +34,30 @@ FF <- ff %>%
     fixNoneCases() %>%
     addSummaryVars() %>%
     filterCases()
+FF$rowID <- seq(nrow(FF))
 
-
-
-
-ff$rowID <- seq(nrow(ff))
-
-# Sample from ff to balance the mode alternatives and legs:
-# First get the unique trip combinations
-trips <- ff %>%
-    distinct(trip, walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>%
-    mutate(
-        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
-        bus  = busInTrip,
-        walk = walkInTrip
-    ) %>%
-    select(trip, numLegs, taxi, walk, bus)
-# Now add random samples from "trips" to balance it by mode and numLegs
-trips <- balanceTrips(
-    trips,
+# Get a balanced set of trips by mode and numLegs
+trips <- getBalancedTrips(FF,
     modes = c('taxi', 'walk', 'bus'),
-    thresholds = c('mode'=8, 'leg'=2))
+    # thresholds are differences in count for mode and numLegs
+    thresholds = c('mode' = 2, 'leg' = 2))
 
 # Use the resulting proportions of unique trips to select rows for DOE
-ff_bal <- getBalancedFF(ff, trips)
+FF_bal <- getBalancedFF(FF, trips)
 
-# Randomly sample from the ff_bal to evenly fit the desired sample size
+# Randomly sample from the FF_bal to evenly fit the desired sample size
 nResp        <- 6000 # Number of respondents
 nAltsPerQ    <- 3 # Number of alternatives per question
 nQPerResp    <- 6 # Number of questions per respondent
 nRowsPerResp <- nAltsPerQ * nQPerResp
 nRows        <- nResp*nRowsPerResp
-doe <- ff_bal[sample(x=seq(nrow(ff_bal)), size=nRows, replace=T),]
+doe <- FF_bal[sample(x=seq(nrow(FF_bal)), size=nRows, replace=T),]
 
 # Make sure no two identical alts appear in one question
 doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp)
 
 # Save design
-write_csv(doe, here::here('survey', 'pilot7', 'survey', 'doeNoCar.csv'))
+write_csv(doe, here::here('survey', 'pilot8', 'survey', 'doeCarNo.csv'))
 
 # Compare balance of modes:
 doe %>%
@@ -90,13 +76,15 @@ doe %>%
 
 # Compare balance of trip legs:
 doe %>%
+    count(numLegs) %>%
+    mutate(p = 100*(n / sum(n))) %>%
     ggplot() +
-    geom_bar(aes(x = numLegs))
+    geom_col(aes(x = numLegs, y = p))
 
 # -----------------------------------------------------------------------------
 # Read in the doe and convert it to individual trips
 
-doe <- read_csv(here::here('survey', 'pilot7', 'survey', 'doeNoCar.csv'))
+doe <- read_csv(here::here('survey', 'pilot8', 'survey', 'doeCarNo.csv'))
 
 # Create trips
 tripDfList <- list()
@@ -105,13 +93,13 @@ for (i in 1:nrow(doe)) {
 }
 
 # Save trip list
-saveRDS(tripDfList, here::here('survey', 'pilot7', 'survey',
-                               'tripDfListNoCar.Rds'))
+saveRDS(tripDfList,
+    here::here('survey', 'pilot8', 'survey', 'tripDfListCarNo.Rds'))
 
 # Create and save data frame of tripDfs
-tripDfList <- readRDS(here::here('survey', 'pilot7', 'survey',
-                                 'tripDfListNoCar.Rds'))
+tripDfList <- readRDS(
+    here::here('survey', 'pilot8', 'survey', 'tripDfListCarNo.Rds'))
 
 tripDfs <- data.table::rbindlist(tripDfList)
-write_csv(tripDfs, here::here('survey', 'pilot7', 'survey',
-    'tripDfListNoCar.csv'))
+write_csv(tripDfs,
+    here::here('survey', 'pilot8', 'survey', 'tripDfsCarNo.csv'))

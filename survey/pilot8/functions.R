@@ -69,7 +69,11 @@ filterCases <- function(df) {
             # If trip contains car, uber, or taxi, minimum price is $5
             ! ((carInTrip | uberInTrip | taxiInTrip) & (price < 5)),
         # Filter out times
-            # If walking, maximum time is 15 minutes
+            # If not driving, max time for leg 1 is 30 minutes
+            ! ((leg1Mode == 'Bus') & (leg1Time > 30)),
+            ! ((leg1Mode == 'Taxi') & (leg1Time > 30)),
+            ! ((leg1Mode == 'Uber/Lyft') & (leg1Time > 30)),
+            # Maximum walking time is 15 minutes
             ! ((leg1Mode == 'Walk') & (leg1Time > 15)),
             ! ((leg2Mode == 'Walk') & (leg2Time > 15)),
             ! ((leg3Mode == 'Walk') & (leg3Time > 15))) %>%
@@ -78,7 +82,23 @@ filterCases <- function(df) {
     return(temp)
 }
 
-balanceTrips <- function(df, modes, thresholds) {
+carSpecificCleaning <- function(df) {
+    # Filter out unrealistic or illogical cases
+    temp <- df %>%
+    mutate(
+        # You can only have an express lane fee for car modes
+        expressFee = ifelse(carInTrip, expressFee, 0),
+        price = price + expressFee) %>%
+    filter(
+        # Minimum driving time is 10 minutes
+        ! (str_detect(leg1Mode, 'Car') & (leg1Time < 10))) %>%
+        # Remove duplicates that may now be remaining
+        distinct()
+    return(temp)
+}
+
+getBalancedTrips <- function(df, modes, thresholds) {
+    trips <- getTrips(df, modes)
     orig <- df
     solution <- FALSE
     while (solution == FALSE) {
@@ -86,6 +106,20 @@ balanceTrips <- function(df, modes, thresholds) {
         solution <- result$solution
     }
     return(result$trips)
+}
+
+getTrips <- function(df, modes) {
+    trips <- df %>%
+    distinct(trip, carInTrip, expressInTrip,
+             walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>%
+    mutate(
+        car  = ifelse(carInTrip | expressInTrip, T, F),
+        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
+        bus  = busInTrip,
+        walk = walkInTrip) %>%
+    select(trip, numLegs, car, taxi, walk, bus)
+    if ('car' %in% modes) { return(trips) }
+    return(select(trip, -car))
 }
 
 runTripLoop <- function(trips, modes, thresholds) {
@@ -97,10 +131,18 @@ runTripLoop <- function(trips, modes, thresholds) {
         diffs <- getDiffs(trips, modes)
         count <- count + 1
         if (count > 200) {
-            return(list(trips=trips, solution=FALSE))
+            return(list(trips = trips, solution = FALSE))
         }
     }
     return(list(trips=trips, solution=TRUE))
+}
+
+getDiffs <- function(df, modes) {
+    modeCounts <- apply(df[modes], 2, sum)
+    legCounts <- table(df$numLegs)
+    modeDiff <- max(max(modeCounts) - modeCounts)
+    legDiff <- max(max(legCounts) - legCounts)
+    return(c(mode = modeDiff, leg = legDiff))
 }
 
 # Adds a random new row to the unique set of trips.
@@ -117,16 +159,8 @@ getNewTrips <- function(df, diffs, modes) {
     return(df)
 }
 
-getDiffs <- function(df, modes) {
-    modeCounts <- apply(df[modes], 2, sum)
-    legCounts <- table(df$numLegs)
-    modeDiff <- max(max(modeCounts) - modeCounts)
-    legDiff <- max(max(legCounts) - legCounts)
-    return(c(mode = modeDiff, leg = legDiff))
-}
-
 getBalancedFF <- function (ff, trips) {
-    proportions <- trips %>% count(trip)
+    proportions <- count(trips, trip)
     ids <- list()
     for (i in 1:nrow(proportions)) {
         ids[[i]] <- which(ff$trip == proportions$trip[i])
@@ -138,6 +172,7 @@ getBalancedFF <- function (ff, trips) {
         samples[[i]] <- sample(x=ids[[i]], size=numSamples[i], replace=T)
     }
     ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
+    return(ff_bal)
 }
 
 addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
@@ -285,4 +320,48 @@ getTripDf <- function(row) {
             price     = row$price,
             timeRange = row$tripTimeRange)
     return(tripDf)
+}
+
+# -----------------------------------------------------------------------------
+# Functions for making the trip plot
+
+makePlot <- function(trip) {
+    p <-
+        ggplot(data = trip, aes(x = x, y = y)) +
+        # Draw lines
+        geom_line(data = trip, size = 1, linetype = 'dotted') +
+        geom_line(data = trip[lineNodes == 1], size = 1) +
+        geom_line(data = trip[lineNodes == 2], size = 1) +
+        geom_line(data = trip[lineNodes == 3], size = 1) +
+        # Draw nodes
+        geom_point(data = trip[node == 1], size = 4, pch = 21,
+                   fill = 'white', colour = 'black') +
+        theme_void() +
+        geom_text_repel(data = trip[labelType == 'Transit'], aes(label=label),
+                         size           = 4,
+                         force          = 3,
+                         nudge_x        = 1,
+                         fontface       = "bold",
+                         box.padding    = unit(0.35, "lines"),
+                         point.padding  = unit(0.75, "lines"),
+                         color          = "black",
+                         # fill           = "white",
+                         segment.colour = "black") +
+        geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
+                         size           = 4,
+                         force          = 3,
+                         nudge_x        = -1,
+                         fontface       = "bold",
+                         box.padding    = unit(0.35, "lines"),
+                         point.padding  = unit(0.75, "lines"),
+                         color          = "black",
+                         fill           = "white",
+                         segment.colour = "black") +
+        geom_label(data = trip[labelType == 'Terminal'], aes(label=label),
+                   label.size = 1,
+                   fontface   = "bold",
+                   fill       = "white",
+                   color      = "black") +
+        scale_x_continuous(limits=c(-1, 0.6))
+    return(p)
 }
