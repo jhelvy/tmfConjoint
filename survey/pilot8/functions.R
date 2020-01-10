@@ -365,7 +365,9 @@ makePlot <- function(trip) {
                    fill       = "white",
                    color      = "black") +
         scale_x_continuous(limits=c(-1, 0.6)) +
-        # Add price and time totals at the top
+        # Add option label, and price and time totals at the top
+        annotate("text", x = -0.2, y = 0.3, fontface = "bold",
+                 label = paste0("Option ", unique(trip$altID))) +
         annotate("text", x = -0.7, y = 0.15, fontface = "bold",
                  label = "Total Price:\nTotal Time:") +
         annotate("text", x = -0.35, y = 0.15, hjust = 0,
@@ -373,3 +375,4 @@ makePlot <- function(trip) {
                                 "\n", unique(trip$timeRange)))
     return(p)
 }
+
