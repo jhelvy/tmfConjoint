@@ -48,9 +48,8 @@ addSummaryVars <- function(df) {
         totalLegTime  = leg1Time + leg2Time + leg3Time,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalLegTime + totalWaitTime,
-        tripTimeMin   = round(totalTripTime*(1 - tripTimeUnc)),
-        tripTimeMax   = round(totalTripTime*(1 + tripTimeUnc)),
-        tripTimeRange = paste(tripTimeMin, '-', tripTimeMax, 'minutes',
+        tripTimeMax   = ceiling(totalTripTime*(1 + tripTimeUnc)),
+        tripTimeRange = paste(totalTripTime, '-', tripTimeMax, 'minutes',
                         sep=' ')) %>%
         # Remove duplicates that may now be remaining
         distinct()
@@ -371,6 +370,6 @@ makePlot <- function(trip) {
                  label = "Total Price:\nTotal Time:") +
         annotate("text", x = -0.35, y = 0.15, hjust = 0,
                  label = paste0("$", unique(trip$price),
-                                "\n$", unique(trip$timeRange)))
+                                "\n", unique(trip$timeRange)))
     return(p)
 }
