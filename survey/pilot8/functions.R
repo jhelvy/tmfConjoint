@@ -65,8 +65,10 @@ filterCases <- function(df) {
         # Filter out unrealistic prices
             # If trip is bus & walking only, maximum price is $10
             ! ((trip %in%  busTrips) & (price > 10)),
-            # If trip contains car, uber, or taxi, minimum price is $5
-            ! ((carInTrip | uberInTrip | taxiInTrip) & (price < 5)),
+            # If trip contains car, minimum price is $5
+            ! (carInTrip & (price < 5)),
+            # If trip contains uber or taxi, minimum price is $10
+            ! ((uberInTrip | taxiInTrip) & (price < 10)),
         # Filter out times
             # If not driving, max time for leg 1 is 30 minutes
             ! ((leg1Mode == 'Bus') & (leg1Time > 30)),
@@ -121,7 +123,7 @@ getTrips <- function(df, modes) {
         walk = walkInTrip) %>%
     select(trip, numLegs, car, taxi, walk, bus)
     if ('car' %in% modes) { return(trips) }
-    return(select(trip, -car))
+    return(select(trips, -car))
 }
 
 runTripLoop <- function(trips, modes, thresholds) {
