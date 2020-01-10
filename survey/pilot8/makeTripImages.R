@@ -24,15 +24,11 @@ for (i in seq(max(tripDfsYes$respID))) {
         plotNames <- str_c(i, '-', j, '-', c(1,2,3), '.png')
         pathsYes <- paste(imageRoot, 'imagesCarYes', plotNames, sep='/')
         pathsNo <- paste(imageRoot, 'imagesCarNo', plotNames, sep='/')
-        ggsave(pathsYes[1], trip1Yes, width=2.5, height=5.5)
-        ggsave(pathsYes[2], trip2Yes, width=2.5, height=5.5)
-        ggsave(pathsYes[3], trip3Yes, width=2.5, height=5.5)
-        ggsave(pathsNo[1], trip1No, width=2.5, height=5.5)
-        ggsave(pathsNo[2], trip2No, width=2.5, height=5.5)
-        ggsave(pathsNo[3], trip3No, width=2.5, height=5.5)
+        ggsave(pathsYes[1], trip1Yes, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsYes[2], trip2Yes, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsYes[3], trip3Yes, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsNo[1], trip1No, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsNo[2], trip2No, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsNo[3], trip3No, width=2.5, height=5.5, dpi = 100)
     }
 }
-
-
-
-
