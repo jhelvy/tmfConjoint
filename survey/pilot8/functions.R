@@ -362,6 +362,16 @@ makePlot <- function(trip) {
                    fontface   = "bold",
                    fill       = "white",
                    color      = "black") +
-        scale_x_continuous(limits=c(-1, 0.6))
+        scale_x_continuous(limits=c(-1, 0.6)) +
+        # Add price and time totals at the top
+        annotate("text", x = -0.7, y = 0.15, fontface = "bold",
+                 label = "Total Price:\nTotal Time:") +
+        annotate("text", x = -0.35, y = 0.15, hjust = 0,
+                 label = paste0("$", unique(trip$price),
+                                "\n$", unique(trip$timeRange)))
     return(p)
 }
+
+
+trip3Yes <- makePlot(dfYes[(altID == 3)][(qID == j)])
+ggsave(pathsYes[3], trip3Yes, width=2.5, height=5.5)
