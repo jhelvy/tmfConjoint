@@ -88,7 +88,10 @@ carSpecificCleaning <- function(df) {
     mutate(
         # You can only have an express lane fee for car modes
         expressFee = ifelse(carInTrip, expressFee, 0),
-        price = price + expressFee) %>%
+        price = price + expressFee,
+        # If first leg is car, then no wait time
+        transfer1Time = ifelse(
+            leg1Mode %in% c('Car', 'Car:\nExpress'), 0, transfer1Time)) %>%
     filter(
         # Minimum driving time is 10 minutes
         ! (str_detect(leg1Mode, 'Car') & (leg1Time < 10))) %>%
@@ -371,7 +374,3 @@ makePlot <- function(trip) {
                                 "\n$", unique(trip$timeRange)))
     return(p)
 }
-
-
-trip3Yes <- makePlot(dfYes[(altID == 3)][(qID == j)])
-ggsave(pathsYes[3], trip3Yes, width=2.5, height=5.5)
