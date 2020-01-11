@@ -12,15 +12,15 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 fixNoneCases <- function(df) {
     temp <- df %>%
     mutate(
-        leg3Mode = ifelse(leg2Mode == 'None', 'None', as.character(leg3Mode)),
+        leg3Mode = ifelse(leg2Mode == none, none, as.character(leg3Mode)),
         # If leg 2 or 3 are None, then the leg times and transfer times are 0
-        leg2Time = ifelse(leg2Mode == 'None', 0, leg2Time),
-        leg3Time = ifelse(leg3Mode == 'None', 0, leg3Time),
-        transfer2Time = ifelse(leg2Mode == 'None', 0, transfer2Time),
-        transfer3Time = ifelse(leg3Mode == 'None', 0, transfer3Time),
+        leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
+        leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
+        transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
+        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
         # If walking, then no transfer time
-        transfer1Time = ifelse(leg1Mode == 'Walk', 0, transfer1Time),
-        transfer2Time = ifelse(leg2Mode == 'Walk', 0, transfer2Time)) %>%
+        transfer1Time = ifelse(leg1Mode == walk, 0, transfer1Time),
+        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
@@ -30,8 +30,8 @@ addSummaryVars <- function(df) {
     # Generate some useful summary variables
     temp <- df %>% mutate(
         numLegs = ifelse(
-            leg2Mode == 'None', 1, ifelse(
-            leg3Mode == 'None', 2, 3)),
+            leg2Mode == none, 1, ifelse(
+            leg3Mode == none, 2, 3)),
         lastLegMode = ifelse(
             numLegs == 1, as.character(leg1Mode), ifelse(
             numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
@@ -39,12 +39,12 @@ addSummaryVars <- function(df) {
             numLegs == 1, paste(leg1Mode), ifelse(
             numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
                           paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
-        carInTrip     = str_detect(trip, 'Car'),
-        expressInTrip = str_detect(trip, 'Express'),
-        walkInTrip    = str_detect(trip, 'Walk'),
-        busInTrip     = str_detect(trip, 'Bus'),
-        taxiInTrip    = str_detect(trip, 'Taxi'),
-        uberInTrip    = str_detect(trip, 'Uber'),
+        carInTrip     = str_detect(trip, car),
+        expressInTrip = str_detect(trip, express),
+        walkInTrip    = str_detect(trip, walk),
+        busInTrip     = str_detect(trip, bus),
+        taxiInTrip    = str_detect(trip, taxi),
+        uberInTrip    = str_detect(trip, uber),
         totalLegTime  = leg1Time + leg2Time + leg3Time,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalLegTime + totalWaitTime,
@@ -71,13 +71,13 @@ filterCases <- function(df) {
             ! ((uberInTrip | taxiInTrip) & (price < 10)),
         # Filter out times
             # If not driving, max time for leg 1 is 30 minutes
-            ! ((leg1Mode == 'Bus') & (leg1Time > 30)),
-            ! ((leg1Mode == 'Taxi') & (leg1Time > 30)),
-            ! ((leg1Mode == 'Uber/Lyft') & (leg1Time > 30)),
+            ! ((leg1Mode == bus) & (leg1Time > 30)),
+            ! ((leg1Mode == taxi) & (leg1Time > 30)),
+            ! ((leg1Mode == uber) & (leg1Time > 30)),
             # Maximum walking time is 15 minutes
-            ! ((leg1Mode == 'Walk') & (leg1Time > 15)),
-            ! ((leg2Mode == 'Walk') & (leg2Time > 15)),
-            ! ((leg3Mode == 'Walk') & (leg3Time > 15))) %>%
+            ! ((leg1Mode == walk) & (leg1Time > 15)),
+            ! ((leg2Mode == walk) & (leg2Time > 15)),
+            ! ((leg3Mode == walk) & (leg3Time > 15))) %>%
         # Remove duplicates that may now be remaining
         distinct()
     return(temp)
@@ -92,10 +92,10 @@ carSpecificCleaning <- function(df) {
         price = price + expressFee,
         # If first leg is car, then no wait time
         transfer1Time = ifelse(
-            leg1Mode %in% c('Car', 'Car:\nExpress'), 0, transfer1Time)) %>%
+            leg1Mode %in% c(car, 'Car:\nExpress'), 0, transfer1Time)) %>%
     filter(
         # Minimum driving time is 10 minutes
-        ! (str_detect(leg1Mode, 'Car') & (leg1Time < 10))) %>%
+        ! (str_detect(leg1Mode, car) & (leg1Time < 10))) %>%
         # Remove duplicates that may now be remaining
         distinct()
     return(temp)
@@ -334,24 +334,25 @@ makePlot <- function(trip) {
         ggplot(data = trip, aes(x = x, y = y)) +
         # Draw lines
         geom_line(data = trip, size = 1, linetype = 'dotted') +
-        geom_line(data = trip[lineNodes == 1], size = 1) +
-        geom_line(data = trip[lineNodes == 2], size = 1) +
-        geom_line(data = trip[lineNodes == 3], size = 1) +
+        geom_line(data = filter(trip, lineNodes == 1), size = 1) +
+        geom_line(data = filter(trip, lineNodes == 2), size = 1) +
+        geom_line(data = filter(trip, lineNodes == 3), size = 1) +
         # Draw nodes
-        geom_point(data = trip[node == 1], size = 4, pch = 21,
+        geom_point(data = filter(trip, node == 1), size = 4, pch = 21,
                    fill = 'white', colour = 'black') +
         theme_void() +
-        geom_text_repel(data = trip[labelType == 'Transit'], aes(label=label),
-                         size           = 4,
-                         force          = 3,
-                         nudge_x        = 1,
-                         fontface       = "bold",
-                         box.padding    = unit(0.35, "lines"),
-                         point.padding  = unit(0.75, "lines"),
-                         color          = "black",
-                         # fill           = "white",
-                         segment.colour = "black") +
-        geom_label_repel(data = trip[labelType == 'Node'], aes(label=label),
+        geom_text_repel(data = filter(trip, labelType == 'Transit'),
+                        aes(label=label),
+                        size           = 4,
+                        force          = 3,
+                        nudge_x        = 1,
+                        fontface       = "bold",
+                        box.padding    = unit(0.35, "lines"),
+                        point.padding  = unit(0.75, "lines"),
+                        color          = "black",
+                        segment.colour = "black") +
+        geom_label_repel(data = filter(trip, labelType == 'Node'),
+                         aes(label=label),
                          size           = 4,
                          force          = 3,
                          nudge_x        = -1,
@@ -361,7 +362,8 @@ makePlot <- function(trip) {
                          color          = "black",
                          fill           = "white",
                          segment.colour = "black") +
-        geom_label(data = trip[labelType == 'Terminal'], aes(label=label),
+        geom_label(data = filter(trip, labelType == 'Terminal'),
+                   aes(label=label),
                    label.size = 1,
                    fontface   = "bold",
                    fill       = "white",

@@ -1,26 +1,16 @@
 # setwd('/Users/jhelvy/gh/tmfConjoint/')
 
 library(here)
-source(here::here('survey', 'pilot8', 'functions.R'))
-source(here::here('survey', 'pilot8', 'filterCases.R'))
+source(here::here('survey', 'pilot8', 'doeSettings.R'))
 
 # -----------------------------------------------------------------------------
 # Main DOE construction - randomized, stratified by number of trips and modes
 
-# Define modes
-# 'Car'
-# 'Car:\nExpress'
-# 'Uber/Lyft'
-# 'Taxi'
-# 'Bus'
-# 'Walk'
-# 'None'
-
 # Generate full factorial
 ff <- as_tibble(expand.grid(
-    leg1Mode      = c('Uber/Lyft', 'Taxi', 'Bus','Walk','Car','Car:\nExpress'),
-    leg2Mode      = c('None', 'Uber/Lyft', 'Taxi', 'Bus', 'Walk'),
-    leg3Mode      = c('None', 'Uber/Lyft', 'Taxi', 'Bus', 'Walk'),
+    leg1Mode      = c(uber, taxi, bus, walk, car, express),
+    leg2Mode      = c(none, uber, taxi, bus, walk),
+    leg3Mode      = c(none, uber, taxi, bus, walk),
     price         = c(2, 5, 10, 15, 20, 25, 30), # Full trip, USD $
     expressFee    = c(5, 10, 15), # USD $
     leg1Time      = c(10, 15, 20, 25, 30, 40), # Minutes
@@ -50,12 +40,10 @@ trips <- getBalancedTrips(FF,
 FF_bal <- getBalancedFF(FF, trips)
 
 # Randomly sample from the FF_bal to evenly fit the desired sample size
-nResp        <- 6000 # Number of respondents
-nAltsPerQ    <- 3 # Number of alternatives per question
-nQPerResp    <- 6 # Number of questions per respondent
-nRowsPerResp <- nAltsPerQ * nQPerResp
+nRowsPerResp <- nAltsPerQ*nQPerResp
 nRows        <- nResp*nRowsPerResp
-doe <- FF_bal[sample(x=seq(nrow(FF_bal)), size=nRows, replace=T),]
+doeIDs       <- sample(x=seq(nrow(FF_bal)), size=nRows, replace=T)
+doe          <- FF_bal[doeIDs,]
 
 # Make sure no two identical alts appear in one question
 doe <- removeDoubleAlts(doe, nAltsPerQ, nQPerResp)
@@ -85,26 +73,3 @@ doe %>%
     mutate(p = 100*(n / sum(n))) %>%
     ggplot() +
     geom_col(aes(x = numLegs, y = p))
-
-# -----------------------------------------------------------------------------
-# Read in the doe and convert it to individual trips
-
-doe <- read_csv(here::here('survey', 'pilot8', 'survey', 'doeCarYes.csv'))
-
-# Create trips
-tripDfList <- list()
-for (i in 1:nrow(doe)) {
-    tripDfList[[i]] <- getTripDf(doe[i,])
-}
-
-# Save trip list
-saveRDS(tripDfList,
-    here::here('survey', 'pilot8', 'survey', 'tripDfListCarYes.Rds'))
-
-# Create and save data frame of tripDfs
-tripDfList <- readRDS(
-    here::here('survey', 'pilot8', 'survey', 'tripDfListCarYes.Rds'))
-
-tripDfs <- data.table::rbindlist(tripDfList)
-write_csv(tripDfs,
-    here::here('survey', 'pilot8', 'survey', 'tripDfsCarYes.csv'))
