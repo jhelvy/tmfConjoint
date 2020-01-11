@@ -10,7 +10,7 @@ doeNo <- read_csv(here::here('survey', 'pilot8', 'survey', 'doeCarNo.csv'))
 # Create all trip images
 saveRoot <- '/Users/jhelvy/sync/00_projects/TMF/survey'
 s <- data.frame(w = 2.5, h = 5.5, d = 100) # image save settings
-for (i in seq(max(tripDfsYes$respID))) {
+for (i in seq(max(doeYes$respID))) {
     respDoeYes <- filter(doeYes, respID == i)
     respDoeNo <- filter(doeNo, respID == i)
     for (j in seq(max(respDoeYes$qID))) {
