@@ -9,8 +9,8 @@ doeNo <- read_csv(here::here('survey', 'pilot8', 'survey', 'doeCarNo.csv'))
 
 # Create all trip images
 saveRoot <- '/Users/jhelvy/sync/00_projects/TMF/survey'
-# for (i in seq(max(tripDfsYes$respID))) {
-for (i in seq(3)) {
+s <- data.frame(w = 2.5, h = 5.5, d = 100) # image save settings
+for (i in seq(max(tripDfsYes$respID))) {
     respDoeYes <- filter(doeYes, respID == i)
     respDoeNo <- filter(doeNo, respID == i)
     for (j in seq(max(respDoeYes$qID))) {
@@ -33,11 +33,11 @@ for (i in seq(3)) {
         trip1No <- makePlot(tripDf1No)
         trip2No <- makePlot(tripDf2No)
         trip3No <- makePlot(tripDf3No)
-        ggsave(pathsYes[1], trip1Yes, width=2.5, height=5.5, dpi = 100)
-        ggsave(pathsYes[2], trip2Yes, width=2.5, height=5.5, dpi = 100)
-        ggsave(pathsYes[3], trip3Yes, width=2.5, height=5.5, dpi = 100)
-        ggsave(pathsNo[1], trip1No, width=2.5, height=5.5, dpi = 100)
-        ggsave(pathsNo[2], trip2No, width=2.5, height=5.5, dpi = 100)
-        ggsave(pathsNo[3], trip3No, width=2.5, height=5.5, dpi = 100)
+        ggsave(pathsYes[1], trip1Yes, width=s$w, height=s$h, dpi = s$d)
+        ggsave(pathsYes[2], trip2Yes, width=s$w, height=s$h, dpi = s$d)
+        ggsave(pathsYes[3], trip3Yes, width=s$w, height=s$h, dpi = s$d)
+        ggsave(pathsNo[1], trip1No, width=s$w, height=s$h, dpi = s$d)
+        ggsave(pathsNo[2], trip2No, width=s$w, height=s$h, dpi = s$d)
+        ggsave(pathsNo[3], trip3No, width=s$w, height=s$h, dpi = s$d)
     }
 }
