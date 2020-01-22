@@ -7,6 +7,18 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 # -----------------------------------------------------------------------------
 # Functions making the DOE
 
+walkSpecificCleaning <- function(df) {
+    temp <- df %>%
+    mutate(
+        # If walking, then no transfer time
+        transfer1Time = ifelse(leg1Mode == walk, 0, transfer1Time),
+        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time),
+        transfer3Time = ifelse(leg3Mode == walk, 0, transfer3Time)) %>%
+    # Remove duplicates that may now be remaining
+    distinct()
+    return(temp)
+}
+
 # If leg2Mode is "None", then leg3Mode also must be "None",
 # and the leg times and wait times should be 0
 fixNoneCases <- function(df) {
@@ -17,10 +29,7 @@ fixNoneCases <- function(df) {
         leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
-        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time),
-        # If walking, then no transfer time
-        transfer1Time = ifelse(leg1Mode == walk, 0, transfer1Time),
-        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)) %>%
+        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time)) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
@@ -44,15 +53,42 @@ addSummaryVars <- function(df) {
         walkInTrip    = str_detect(trip, walk),
         busInTrip     = str_detect(trip, bus),
         taxiInTrip    = str_detect(trip, taxi),
-        uberInTrip    = str_detect(trip, uber),
+        uberInTrip    = str_detect(trip, uber)) %>%
+    # Remove duplicates that may now be remaining
+    distinct()
+    return(temp)
+}
+
+carSpecificCleaning <- function(df) {
+    temp <- df %>%
+    mutate(
+        # You can only have an express lane fee for car modes
+        expressFee = ifelse(carInTrip, expressFee, 0),
+        priceOrig  = price, # Store the original price value
+        price      = price + expressFee,
+        # If first leg is car, then no wait time
+        transfer1Time = ifelse(carInTrip, 0, transfer1Time)) %>%
+    filter(
+        # If trip contains car, minimum price is $5
+        ! (carInTrip & (price < 5)),
+        # Minimum driving time is 10 minutes
+        ! (str_detect(leg1Mode, car) & (leg1Time < 10))) %>%
+    # Remove duplicates that may now be remaining
+    distinct()
+    return(temp)
+}
+
+addTimeSummary <- function(df) {
+    # Generate some useful summary variables
+    temp <- df %>% mutate(
         totalLegTime  = leg1Time + leg2Time + leg3Time,
         totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
         totalTripTime = totalLegTime + totalWaitTime,
         tripTimeMax   = ceiling(totalTripTime*(1 + tripTimeUnc)),
         tripTimeRange = paste(totalTripTime, '-', tripTimeMax, 'minutes',
                         sep=' ')) %>%
-        # Remove duplicates that may now be remaining
-        distinct()
+    # Remove duplicates that may now be remaining
+    distinct()
     return(temp)
 }
 
@@ -65,11 +101,9 @@ filterCases <- function(df) {
         # Filter out unrealistic prices
             # If trip is bus & walking only, maximum price is $10
             ! ((trip %in%  busTrips) & (price > 10)),
-            # If trip contains car, minimum price is $5
-            ! (carInTrip & (price < 5)),
             # If trip contains uber or taxi, minimum price is $10
             ! ((uberInTrip | taxiInTrip) & (price < 10)),
-        # Filter out times
+        # Filter out unrealistic times
             # If not driving, max time for leg 1 is 30 minutes
             ! ((leg1Mode == bus) & (leg1Time > 30)),
             ! ((leg1Mode == taxi) & (leg1Time > 30)),
@@ -78,26 +112,8 @@ filterCases <- function(df) {
             ! ((leg1Mode == walk) & (leg1Time > 15)),
             ! ((leg2Mode == walk) & (leg2Time > 15)),
             ! ((leg3Mode == walk) & (leg3Time > 15))) %>%
-        # Remove duplicates that may now be remaining
-        distinct()
-    return(temp)
-}
-
-carSpecificCleaning <- function(df) {
-    # Filter out unrealistic or illogical cases
-    temp <- df %>%
-    mutate(
-        # You can only have an express lane fee for car modes
-        expressFee = ifelse(carInTrip, expressFee, 0),
-        price = price + expressFee,
-        # If first leg is car, then no wait time
-        transfer1Time = ifelse(
-            leg1Mode %in% c(car, 'Car:\nExpress'), 0, transfer1Time)) %>%
-    filter(
-        # Minimum driving time is 10 minutes
-        ! (str_detect(leg1Mode, car) & (leg1Time < 10))) %>%
-        # Remove duplicates that may now be remaining
-        distinct()
+    # Remove duplicates that may now be remaining
+    distinct()
     return(temp)
 }
 

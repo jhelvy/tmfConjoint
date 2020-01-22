@@ -24,10 +24,12 @@ ff <- as_tibble(expand.grid(
 
 # Filter out nonsensical alternatives and add some helpful variables
 FF <- ff %>%
+    walkSpecificCleaning() %>% 
     fixNoneCases() %>%
     addSummaryVars() %>%
-    filterCases() %>%
-    carSpecificCleaning()
+    carSpecificCleaning() %>%
+    addTimeSummary() %>% 
+    filterCases() 
 FF$rowID <- seq(nrow(FF))
 
 # Get a balanced set of trips by mode and numLegs

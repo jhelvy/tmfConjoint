@@ -1,8 +1,14 @@
-# List of possible trips - those marked "NO" will be filtered out:
+# List of possible trips - those marked "NO" will be filtered out.
+# Below I list every single possible trip out to 3 legs,
+# and if a case is filtered out I explain why.
 
+# 1 LEG TRIPS
 # Bus
+# Walk                            # NO, we're not interested in walking only
 # Uber/Lyft
 # Taxi
+
+# 2 LEG TRIPS
 # Bus       -> Bus
 # Walk      -> Bus
 # Uber/Lyft -> Bus
@@ -19,10 +25,12 @@
 # Walk      -> Taxi               # NO, you would just taxi from the start
 # Uber/Lyft -> Taxi               # NO, you wouldn't switch uber to taxi
 # Taxi      -> Taxi               # NO, you're already in a taxi
+
+# 3 LEG TRIPS
 # Bus       -> Bus       -> Bus
 # Walk      -> Bus       -> Bus
-# Uber/Lyft -> Bus       -> Bus        # NO, you would uber to the 2nd bus
-# Taxi      -> Bus       -> Bus        # NO, you would taxi to the 2nd bus
+# Uber/Lyft -> Bus       -> Bus        # NO, you would uber to the 2nd bus stop
+# Taxi      -> Bus       -> Bus        # NO, you would taxi to the 2nd bus stop
 # Bus       -> Walk      -> Bus
 # Uber/Lyft -> Walk      -> Bus        # NO, you would uber to the bus stop
 # Taxi      -> Walk      -> Bus        # NO, you would uber to the bus stop
@@ -56,7 +64,6 @@
 # Bus       -> Uber/Lyft -> Taxi       # NO, you're already in an uber
 # Bus       -> Taxi      -> Taxi       # NO, you're already in a taxi
 
-
 # Additional car cases
 # Car
 # Car express
@@ -69,46 +76,48 @@
 # Car          -> Taxi          # NO, you're already driving
 # Car express  -> Taxi          # NO, you're already driving
 
-# NO 3-leg car trips - you would just drive to the end
+# NO to all 3-leg car trips - you would just drive to the end
 
 goodTrips <- c(
-    'Car',
-    'Car:\nExpress',
-    'Bus',
-    'Uber/Lyft',
-    'Taxi',
-    'Car|Bus',
-    'Car:\nExpress|Bus',
-    'Bus|Bus',
-    'Walk|Bus',
-    'Uber/Lyft|Bus',
-    'Taxi|Bus',
-    'Car|Walk',
-    'Car:\nExpress|Walk',
-    'Bus|Walk',
-    'Uber/Lyft|Walk',
-    'Taxi|Walk',
-    'Bus|Uber/Lyft',
-    'Bus|Taxi',
-    'Bus|Bus|Bus',
-    'Walk|Bus|Bus',
-    'Bus|Walk|Bus',
-    'Bus|Bus|Walk',
-    'Walk|Bus|Walk',
-    'Uber/Lyft|Bus|Walk',
-    'Taxi|Bus|Walk',
-    'Walk|Bus|Uber/Lyft',
-    'Bus|Walk|Uber/Lyft',
-    'Walk|Bus|Taxi',
-    'Bus|Walk|Taxi')
+    car,
+    express,
+    bus,
+    uber,
+    taxi,
+    paste(car, bus, sep = '|'),
+    paste(express, bus, sep = '|'),
+    paste(bus, bus, sep = '|'),
+    paste(walk, bus, sep = '|'),
+    paste(uber, bus, sep = '|'),
+    paste(taxi, bus, sep = '|'),
+    paste(car, walk, sep = '|'),
+    paste(express, walk, sep = '|'),
+    paste(bus, walk, sep = '|'),
+    paste(uber, walk, sep = '|'),
+    paste(taxi, walk, sep = '|'),
+    paste(bus, uber, sep = '|'),
+    paste(bus, taxi, sep = '|'),
+    paste(bus, bus, bus, sep = '|'),
+    paste(walk, bus, bus, sep = '|'),
+    paste(bus, walk, bus, sep = '|'),
+    paste(bus, bus, walk, sep = '|'),
+    paste(walk, bus, walk, sep = '|'),
+    paste(uber, bus, walk, sep = '|'),
+    paste(taxi, bus, walk, sep = '|'),
+    paste(walk, bus, uber, sep = '|'),
+    paste(bus, walk, uber, sep = '|'),
+    paste(walk, bus, taxi, sep = '|'),
+    paste(bus, walk, taxi, sep = '|')
+)
 
 busTrips <- c(
-    'Bus',
-    'Bus|Bus',
-    'Walk|Bus',
-    'Bus|Walk',
-    'Bus|Bus|Bus',
-    'Walk|Bus|Bus',
-    'Bus|Walk|Bus',
-    'Bus|Bus|Walk',
-    'Walk|Bus|Walk')
+    bus,
+    paste(bus, bus, sep = '|'),
+    paste(walk, bus, sep = '|'),
+    paste(bus, walk, sep = '|'),
+    paste(bus, bus, bus, sep = '|'),
+    paste(walk, bus, bus, sep = '|'),
+    paste(bus, walk, bus, sep = '|'),
+    paste(bus, bus, walk, sep = '|'),
+    paste(walk, bus, walk, sep = '|')
+)

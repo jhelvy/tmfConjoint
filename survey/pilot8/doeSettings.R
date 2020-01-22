@@ -1,5 +1,4 @@
 source(here::here('survey', 'pilot8', 'functions.R'))
-source(here::here('survey', 'pilot8', 'filterCases.R'))
 
 # Set number of respondents and respondent question
 nResp        <- 200 # Number of respondents
@@ -14,3 +13,6 @@ taxi    = 'Taxi'
 bus     = 'Bus'
 walk    = 'Walk'
 none    = 'None'
+
+# Define trip mode combinations to include in the survey
+source(here::here('survey', 'pilot8', 'filterCases.R'))
