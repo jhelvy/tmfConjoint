@@ -6,7 +6,7 @@ library(data.table)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
 # -----------------------------------------------------------------------------
-# Functions making the DOE
+# Functions for making the DOE
 
 walkSpecificCleaning <- function(df) {
     temp <- df %>%
@@ -241,6 +241,7 @@ removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
 
 # -----------------------------------------------------------------------------
 # Functions for making the tripDfs
+
 addLegTimes <- function(trip, row) {
     legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
     legTimes <- legTimes[1:row$numLegs]
@@ -398,3 +399,29 @@ makePlot <- function(trip) {
     return(p)
 }
 
+# -----------------------------------------------------------------------------
+# Functions for sample size testing
+
+dummyCode = function(df, vars) {
+    df = as.data.frame(df)
+    nonVars = colnames(df)[which(! colnames(df) %in% vars)]
+    # Keep the original variables and the order to restore later after merging
+    df$order = seq(nrow(df))
+    for (i in 1:length(vars)) {
+        var      = vars[i]
+        colIndex = which(colnames(df) == var)
+        levels   = sort(unique(df[,colIndex]))
+        mergeMat = as.data.frame(diag(length(levels)))
+        mergeMat = cbind(levels, mergeMat)
+        colnames(mergeMat) = c(var, paste(var, levels, sep='_'))
+        df = merge(df, mergeMat)
+    }
+    # Restore the original column order
+    new = colnames(df)[which(! colnames(df) %in% c(vars, nonVars))]
+    df = df[c(nonVars, vars, new)]
+    # Restore the original row order
+    df = df[order(df$order),]
+    row.names(df) = df$order
+    df$order <- NULL
+    return(df)
+}

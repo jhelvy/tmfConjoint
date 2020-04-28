@@ -1,10 +1,11 @@
 source(here::here('survey', 'pilot9', 'functions.R'))
 
 # Read in DOEs
-doe <- readRDS(here::here(
+doe_all <- readRDS(here::here(
     'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+doe     <- doe_all$`6000`
 doeNo  <- doe$no %>% mutate(hasCar = 'no')
-doeYes <- does$yes %>% mutate(hasCar = 'yes')
+doeYes <- doe$yes %>% mutate(hasCar = 'yes')
 
 # Create all trip images
 saveRoot <- '/Users/jhelvy/sync/00_projects/TMF/survey'
