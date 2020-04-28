@@ -12,7 +12,7 @@ nAltsPerQ <- 3 # Number of alternatives per question
 nQPerResp <- 6 # Number of questions per respondent
 
 # Randomly sample from the FF_bal to evenly fit the desired sample size
-does <- list()
+doe <- list()
 for (i in 1:length(nResp)) {
     size         <- nResp[i]
     nRowsPerResp <- nAltsPerQ*nQPerResp
@@ -22,10 +22,11 @@ for (i in 1:length(nResp)) {
     doe_no       <- FF_bal_no[doeIDs_no,]
     doe_yes      <- FF_bal_yes[doeIDs_yes,]
     # Make sure no two identical alts appear in one question
-    does <- list(
-        no  <- removeDoubleAlts(doe_no, nAltsPerQ, nQPerResp),
-        yes <- removeDoubleAlts(doe_yes, nAltsPerQ, nQPerResp))
-    # Save does
-    saveRDS(does, here::here('survey', 'pilot9', 'survey', 'doe',
-        paste0('doe_', size, '.Rds')))
+    doe[[i]] <- list(
+        no  = removeDoubleAlts(doe_no, nAltsPerQ, nQPerResp),
+        yes = removeDoubleAlts(doe_yes, nAltsPerQ, nQPerResp))
 }
+
+# Save does
+names(doe) <- nResp
+saveRDS(doe, here::here('survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))

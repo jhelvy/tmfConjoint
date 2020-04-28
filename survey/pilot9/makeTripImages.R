@@ -1,9 +1,9 @@
 source(here::here('survey', 'pilot9', 'functions.R'))
 
 # Read in DOEs
-does <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'doe_6000.Rds'))
-doeNo  <- does$no %>% mutate(hasCar = 'no')
+doe <- readRDS(here::here(
+    'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+doeNo  <- doe$no %>% mutate(hasCar = 'no')
 doeYes <- does$yes %>% mutate(hasCar = 'yes')
 
 # Create all trip images

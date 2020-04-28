@@ -1,8 +1,9 @@
-does <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'doe_6000.Rds'))
+doe_all <- readRDS(here::here(
+    'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
 
-doe_no  <- does$no %>% mutate(hasCar = 'no')
-doe_yes <- does$yes %>% mutate(hasCar = 'yes')
+doe     <- doe_all$`6000`
+doe_no  <- doe$no %>% mutate(hasCar = 'no')
+doe_yes <- doe$yes %>% mutate(hasCar = 'yes')
 doe     <- bind_rows(doe_no, doe_yes)
 
 # Compare balance of modes:
