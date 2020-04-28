@@ -6,39 +6,44 @@ library(janitor)
 library(stringr)
 
 # Load DOE from R
-doe_all <- readRDS(here::here(
+source(here::here('survey', 'pilot9', 'functions.R'))
+doeAll <- readRDS(here::here(
     'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
-nResp <- as.numeric(names(doe_all))
+nResp <- as.numeric(names(doeAll))
 
 # Define functions
-getTempDf <- function(doeAll, size) {
-    respIDs <- sample(seq(max(doeAll$respID)), size)
-    tempDf <- doeAll %>% filter(respID %in% respIDs)
-    tempDf$obsID <- rep(seq(nrow(tempDf) / 3), each = 3)
+getTempDf <- function(doeAll, size, hasCar = TRUE) {
+    does <- doeAll[[as.character(size)]]
+    doe <- does[['yes']] 
+    if (! hasCar) { doe <- does[['no']] }
+    respIDs <- sample(seq(max(doe$respID)), size)
+    tempDf <- doe %>% filter(respID %in% respIDs)
+    numAlts <- max(tempDf$altID)
+    tempDf$obsID <- rep(seq(nrow(tempDf) / numAlts), each = numAlts)
     # Assign random choices
-    choices <- sample(seq(3), max(tempDf$obsID), replace = TRUE)
-    choices <- diag(3)[choices,]
+    choices <- sample(seq(numAlts), max(tempDf$obsID), replace = TRUE)
+    choices <- diag(numAlts)[choices,]
     tempDf$choice <- matrix(t(choices))
     return(tempDf)
 }
 
 recodeTempDf <- function(tempDf) {
     tempDf <- dummyCode(tempDf, vars = c(
-        'incentive', 'amount', 'timing')) %>%
-        clean_names()
+        'leg1Mode', 'leg2Mode', 'leg3Mode', 'tripTimeUnc')) %>%
+        clean_names('lower_camel')
     # Convert the data to "mlogit" format:
     tempDf = mlogit.data(
         data    = tempDf,
         shape   = 'long',
         choice  = 'choice',
-        alt.var = 'alt_id')
+        alt.var = 'altId')
     return(tempDf)
 }
 
 # Get the standard errors out of the models
 getSE <- function(models) {
     coefs1 <- coef(models[[1]])
-    se <- as.data.frame(matrix(0, ncol=length(coefs1) + 1, nrow=length(numResp)))
+    se <- as.data.frame(matrix(0, ncol=length(coefs1) + 1, nrow=length(nResp)))
     colnames(se) <- c('size', names(coefs1))
     for (i in 1:length(models)) {
         model <- models[[i]]
@@ -63,21 +68,20 @@ formatSE <- function(df) {
 # Baseline model
 
 # Run models for different sample sizes
-numResp <- seq(100, 3000, 300)
 index <- 1
 models <- list()
-for (i in 1:length(numResp)) {
-    size <- numResp[i]
-    tempDf <- getTempDf(doeAll, size)
+for (i in 1:length(nResp)) {
+    size <- nResp[i]
+    tempDf <- getTempDf(doeAll, size, hasCar = TRUE)
     tempDf <- recodeTempDf(tempDf)
     # Run the model:
-    models[[i]] = mlogit(tempDf, formula = choice ~
-        amount_2000 + amount_3000 + amount_4000 + amount_5000 +
-        amount_6000 + amount_7000 + amount_8000 + amount_9000 + amount_10000 +
-        incentive_tax_deduction + incentive_sales_tax_exemption +
-        incentive_rebate_from_dealer + incentive_rebate_from_oem +
-        incentive_rebate_from_the_government +
-        timing_6_8_weeks + timing_3_months + timing_1_year | 0)
+    # models[[i]] = mlogit(tempDf,
+    model = mlogit(tempDf, 
+        formula = choice ~
+            price + expressFee + 
+            totalLegTime + totalWaitTime + tripTimeUnc +
+            leg1Mode + leg2Mode + leg3Mode | 0)
+    summary(model)
 }
 
 # Save results
