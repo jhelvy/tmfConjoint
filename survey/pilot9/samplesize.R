@@ -79,7 +79,7 @@ for (i in 1:length(nResp)) {
     model = mlogit(tempDf, 
         formula = choice ~
             price + expressFee + 
-            totalLegTime + totalWaitTime + tripTimeUnc +
+            totalLegTime + totalWaitTime + tripTimeUnc0_1 + tripTimeUnc0_2 +
             leg1Mode + leg2Mode + leg3Mode | 0)
     summary(model)
 }
