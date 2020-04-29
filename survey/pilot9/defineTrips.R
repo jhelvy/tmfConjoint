@@ -57,7 +57,7 @@ none    = 'None'
 # NO to all 3-leg car trips - you would just drive to the end
 
 goodTrips <- tribble(
-    ~trip,                             ~type,
+    ~trip,                             ~tripType,
     # 1 LEG TRIPS
     car,                                'car',
     express,                            'car',

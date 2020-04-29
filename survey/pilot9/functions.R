@@ -6,32 +6,7 @@ library(data.table)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
 # -----------------------------------------------------------------------------
-# Functions for making the DOE
-
-# addSummaryVars <- function(df) {
-#     # Generate some useful summary variables
-#     result <- df %>% mutate(
-#         leg3Mode = ifelse(
-#             leg2Mode == none, none, as.character(leg3Mode)),
-#         numLegs = ifelse(
-#             leg2Mode == none, 1, ifelse(
-#             leg3Mode == none, 2, 3)),
-#         lastLegMode = ifelse(
-#             numLegs == 1, as.character(leg1Mode), ifelse(
-#             numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
-#         trip = ifelse(
-#             numLegs == 1, paste(leg1Mode), ifelse(
-#             numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
-#             paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
-#         carInTrip     = str_detect(trip, car),
-#         expressInTrip = str_detect(trip, express),
-#         walkInTrip    = str_detect(trip, walk),
-#         busInTrip     = str_detect(trip, bus),
-#         taxiInTrip    = str_detect(trip, taxi)) %>%
-#         # Remove duplicates that may now be remaining
-#         distinct()
-#     return(result)
-# }
+# Functions for making the full factorial 
 
 walkSpecificCleaning <- function(df) {
     temp <- df %>%
@@ -100,7 +75,7 @@ filterCases <- function(df) {
     filter(
         # Filter out unrealistic prices
             # If trip is bus & walking only, maximum price is $10
-            ! ((type == 'bus') & (price > 10)),
+            ! ((tripType == 'bus') & (price > 10)),
             # If trip contains taxi, minimum price is $10
             ! (taxiInTrip & (price < 10)),
         # Filter out unrealistic times
@@ -116,69 +91,49 @@ filterCases <- function(df) {
     return(temp)
 }
 
-getBalancedTrips <- function(df, modes, thresholds) {
-    trips <- getTrips(df, modes)
-    orig <- df
-    solution <- FALSE
-    while (solution == FALSE) {
-        result <- runTripLoop(trips, modes, thresholds)
-        solution <- result$solution
-    }
-    return(result$trips)
-}
+# -----------------------------------------------------------------------------
+# Functions for balancing the full factorial
 
-getTrips <- function(df, modes) {
-    trips <- df %>%
-    distinct(trip, carInTrip, expressInTrip,
-             walkInTrip, busInTrip, taxiInTrip, numLegs) %>%
-    mutate(
-        car  = ifelse(carInTrip | expressInTrip, T, F),
-        taxi = ifelse(taxiInTrip, T, F),
-        bus  = busInTrip,
-        walk = walkInTrip) %>%
-    select(trip, numLegs, car, taxi, walk, bus)
-    if ('car' %in% modes) { return(trips) }
-    return(select(trips, -car))
-}
-
-runTripLoop <- function(trips, modes, thresholds) {
-    count <- 0
-    diffs <- getDiffs(trips, modes)
-    while ((diffs['mode'] > thresholds['mode']) |
-           (diffs['leg'] > thresholds['leg'])) {
-        trips <- getNewTrips(trips, diffs, modes)
-        diffs <- getDiffs(trips, modes)
-        count <- count + 1
-        if (count > 200) {
-            return(list(trips = trips, solution = FALSE))
+getBalancedTrips <- function(trips, tripSet) {
+    betterRows <- getBetterRows(trips, tripSet)
+    if (nrow(betterRows) <= 0) {
+        return(trips)
+    } else {
+        for (i in 1:nrow(betterRows)) {
+            temp <- bind_rows(trips, betterRows[i,])
+            return(getBalancedTrips(temp, tripSet))
         }
     }
-    return(list(trips=trips, solution=TRUE))
 }
 
-getDiffs <- function(df, modes) {
-    modeCounts <- apply(df[modes], 2, sum)
-    legCounts <- table(df$numLegs)
-    modeDiff <- max(max(modeCounts) - modeCounts)
-    legDiff <- max(max(legCounts) - legCounts)
-    return(c(mode = modeDiff, leg = legDiff))
-}
-
-# Adds a random new row to the unique set of trips.
-# If the new row helps balance the mode and legs, keep it, otherwise
-# return the original df
-getNewTrips <- function(df, diffs, modes) {
-    row <- df[sample(seq(nrow(df)), 1),]
-    temp <- rbind(df, row)
-    newDiffs <- getDiffs(temp, modes)
-    if ((newDiffs['mode'] <  diffs['mode']) |
-        (newDiffs['leg'] < diffs['leg'])) {
-        return(temp)
+getBetterRows <- function(trips, tripSet) {
+    diffs <- getDiffs(trips)
+    rowIds <- c()
+    for (i in 1:nrow(tripSet)) {
+        trip <- tripSet[i,]
+        temp <- bind_rows(trips, trip)
+        diffs_temp <- getDiffs(temp)
+        if ((diffs_temp$tripType    < diffs$tripType) |
+            (diffs_temp$numLegs < diffs$numLegs)) {
+            rowIds <- c(rowIds, i)
+        }
     }
-    return(df)
+    return(tripSet[rowIds,])
 }
 
-getBalancedFF <- function (ff, trips) {
+getDiffs <- function(trips) {
+    tripType <- trips %>% 
+        count(tripType) %>% 
+        mutate(diff = max(n) - n)
+    numLegs <- trips %>% 
+        count(numLegs) %>% 
+        mutate(diff = max(n) - n)
+    diff_tripType <- max(tripType$diff)
+    diff_numLegs <- max(numLegs$diff)
+    return(list(tripType = diff_tripType, numLegs = diff_numLegs))
+}
+
+getBalancedFF <- function (FF, trips_bal) {
     proportions <- count(trips, trip)
     ids <- list()
     for (i in 1:nrow(proportions)) {
@@ -192,6 +147,24 @@ getBalancedFF <- function (ff, trips) {
     }
     ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
     return(ff_bal)
+}
+
+# -----------------------------------------------------------------------------
+# Functions for making the DOE
+
+removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
+    doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
+    doe <- getUniqueAltCounts(doe)
+    doubleRows <- which(doe$numUnique != 3)
+    while (length(doubleRows) != 0) {
+        newRows <- sample(x=seq(nrow(doe)), size=length(doubleRows), replace=F)
+        doe[doubleRows,] <- doe[newRows,]
+        doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
+        doe <- getUniqueAltCounts(doe)
+        doubleRows <- which(doe$numUnique != 3)
+    }
+    doe <- doe %>% select(-tripID, -numUnique)
+    return(doe)
 }
 
 addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
@@ -219,21 +192,6 @@ getUniqueAltCounts <- function(doe) {
         mutate(numUnique = n_distinct(tripID)) %>%
         ungroup() %>%
         select(-distinctTrip)
-    return(doe)
-}
-
-removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
-    doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
-    doe <- getUniqueAltCounts(doe)
-    doubleRows <- which(doe$numUnique != 3)
-    while (length(doubleRows) != 0) {
-        newRows <- sample(x=seq(nrow(doe)), size=length(doubleRows), replace=F)
-        doe[doubleRows,] <- doe[newRows,]
-        doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
-        doe <- getUniqueAltCounts(doe)
-        doubleRows <- which(doe$numUnique != 3)
-    }
-    doe <- doe %>% select(-tripID, -numUnique)
     return(doe)
 }
 
