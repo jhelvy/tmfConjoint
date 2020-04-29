@@ -6,9 +6,9 @@ source(here::here('survey', 'pilot9', 'defineModes.R'))
 
 # Generate full factorial
 ff <- as_tibble(expand.grid(
-    leg1Mode      = c(uber, taxi, bus, walk, car, express),
-    leg2Mode      = c(none, uber, taxi, bus, walk),
-    leg3Mode      = c(none, uber, taxi, bus, walk),
+    leg1Mode      = c(taxi, bus, walk, car, express),
+    leg2Mode      = c(none, taxi, bus, walk),
+    leg3Mode      = c(none, taxi, bus, walk),
     price         = c(2, 5, 10, 15, 20, 25, 30), # Full trip, USD $
     expressFee    = c(5, 10, 15), # USD $
     leg1Time      = c(10, 15, 20, 25, 30, 40), # Minutes

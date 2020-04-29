@@ -8,6 +8,31 @@ options(dplyr.width = Inf) # Option to preview all columns in a data frame
 # -----------------------------------------------------------------------------
 # Functions for making the DOE
 
+# addSummaryVars <- function(df) {
+#     # Generate some useful summary variables
+#     result <- df %>% mutate(
+#         leg3Mode = ifelse(
+#             leg2Mode == none, none, as.character(leg3Mode)),
+#         numLegs = ifelse(
+#             leg2Mode == none, 1, ifelse(
+#             leg3Mode == none, 2, 3)),
+#         lastLegMode = ifelse(
+#             numLegs == 1, as.character(leg1Mode), ifelse(
+#             numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
+#         trip = ifelse(
+#             numLegs == 1, paste(leg1Mode), ifelse(
+#             numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
+#             paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
+#         carInTrip     = str_detect(trip, car),
+#         expressInTrip = str_detect(trip, express),
+#         walkInTrip    = str_detect(trip, walk),
+#         busInTrip     = str_detect(trip, bus),
+#         taxiInTrip    = str_detect(trip, taxi)) %>%
+#         # Remove duplicates that may now be remaining
+#         distinct()
+#     return(result)
+# }
+
 walkSpecificCleaning <- function(df) {
     temp <- df %>%
     mutate(
@@ -31,30 +56,6 @@ fixNoneCases <- function(df) {
         leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
         transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
         transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time)) %>%
-    # Remove duplicates that may now be remaining
-    distinct()
-    return(temp)
-}
-
-addSummaryVars <- function(df) {
-    # Generate some useful summary variables
-    temp <- df %>% mutate(
-        numLegs = ifelse(
-            leg2Mode == none, 1, ifelse(
-            leg3Mode == none, 2, 3)),
-        lastLegMode = ifelse(
-            numLegs == 1, as.character(leg1Mode), ifelse(
-            numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
-        trip = ifelse(
-            numLegs == 1, paste(leg1Mode), ifelse(
-            numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
-                          paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
-        carInTrip     = str_detect(trip, car),
-        expressInTrip = str_detect(trip, express),
-        walkInTrip    = str_detect(trip, walk),
-        busInTrip     = str_detect(trip, bus),
-        taxiInTrip    = str_detect(trip, taxi),
-        uberInTrip    = str_detect(trip, uber)) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
@@ -97,18 +98,15 @@ filterCases <- function(df) {
     # Filter out unrealistic or illogical cases
     temp <- df %>%
     filter(
-        # Filter out unrealistic cases
-            trip %in% goodTrips,
         # Filter out unrealistic prices
             # If trip is bus & walking only, maximum price is $10
-            ! ((trip %in%  busTrips) & (price > 10)),
-            # If trip contains uber or taxi, minimum price is $10
-            ! ((uberInTrip | taxiInTrip) & (price < 10)),
+            ! ((type == 'bus') & (price > 10)),
+            # If trip contains taxi, minimum price is $10
+            ! (taxiInTrip & (price < 10)),
         # Filter out unrealistic times
             # If not driving, max time for leg 1 is 30 minutes
             ! ((leg1Mode == bus) & (leg1Time > 30)),
             ! ((leg1Mode == taxi) & (leg1Time > 30)),
-            ! ((leg1Mode == uber) & (leg1Time > 30)),
             # Maximum walking time is 15 minutes
             ! ((leg1Mode == walk) & (leg1Time > 15)),
             ! ((leg2Mode == walk) & (leg2Time > 15)),
@@ -132,10 +130,10 @@ getBalancedTrips <- function(df, modes, thresholds) {
 getTrips <- function(df, modes) {
     trips <- df %>%
     distinct(trip, carInTrip, expressInTrip,
-             walkInTrip, busInTrip, taxiInTrip, uberInTrip, numLegs) %>%
+             walkInTrip, busInTrip, taxiInTrip, numLegs) %>%
     mutate(
         car  = ifelse(carInTrip | expressInTrip, T, F),
-        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
+        taxi = ifelse(taxiInTrip, T, F),
         bus  = busInTrip,
         walk = walkInTrip) %>%
     select(trip, numLegs, car, taxi, walk, bus)

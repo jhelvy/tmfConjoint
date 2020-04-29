@@ -7,11 +7,11 @@ doe_yes <- doe$yes %>% mutate(hasCar = 'yes')
 doe     <- bind_rows(doe_no, doe_yes)
 
 # Compare balance of modes:
-doe %>% 
-    group_by(hasCar) %>% 
+doe %>%
+    group_by(hasCar) %>%
     mutate(
         car  = ifelse(carInTrip | expressInTrip, T, F),
-        taxi = ifelse(taxiInTrip | uberInTrip, T, F),
+        taxi = ifelse(taxiInTrip, T, F),
         bus  = busInTrip,
         walk = walkInTrip
     ) %>%
@@ -24,10 +24,10 @@ doe %>%
     facet_wrap(~hasCar)
 
 # Compare balance of trip legs:
-doe %>% 
-    group_by(hasCar) %>% 
+doe %>%
+    group_by(hasCar) %>%
     count(numLegs) %>%
     mutate(p = 100*(n / sum(n))) %>%
     ggplot() +
-    geom_col(aes(x = numLegs, y = p)) + 
-    facet_wrap(~hasCar)    
+    geom_col(aes(x = numLegs, y = p)) +
+    facet_wrap(~hasCar)
