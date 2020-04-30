@@ -9,8 +9,9 @@ trips <- trips %>%
     filter(! carInTrip, ! expressInTrip) 
 
 # Get a balanced set of trips by number of legs and trip types
-trips <- getBalancedTrips(trips, trips, thresholds = list(
-        tripType = 1, numLegs = 1)) %>% 
+tripSet <- trips
+thresholds = list(tripType = 1, numLegs = 1)
+trips <- getBalancedTrips(trips, tripSet, thresholds) %>% 
     mutate(tripId = row_number())
 
 dim(trips) 

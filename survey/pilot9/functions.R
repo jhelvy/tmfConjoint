@@ -124,18 +124,16 @@ getBalancedTrips <- function(trips, tripSet, thresholds) {
 runTripLoop <- function(trips, tripSet, thresholds) {
     count <- 0
     while (! thresholdsMet(trips, thresholds)) {
+        count <- count + 1
         betterRows <- getBetterRows(trips, tripSet)
-        if (nrow(betterRows) == 0) {
-            print('restarting search')
+        proportions <- count(trips, trip)
+        if ((nrow(betterRows) == 0) | 
+            (0 %in% proportions$n)  |
+            (count > 50)) {
             return(list(trips = trips, solution = FALSE))
         }
         trip <- betterRows[sample(seq(nrow(betterRows)), 1),]
         trips <- bind_rows(trips, trip)
-        count <- count + 1
-        if (count > 50) {
-            print('restarting search')
-            return(list(trips = trips, solution = FALSE))
-        }
     }
     print('solution found!')
     return(list(trips = trips, solution = TRUE))
