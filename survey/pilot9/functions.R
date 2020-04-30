@@ -94,50 +94,50 @@ filterCases <- function(df) {
 # -----------------------------------------------------------------------------
 # Functions for balancing the full factorial
 
-# # Recursive search
+# Recursive search
+getBalancedTrips <- function(trips, tripSet, thresholds) {
+    print(nrow(trips))
+    if (thresholdsMet(trips, thresholds)) {
+        return(trips)
+    } else {
+        betterRows <- getBetterRows(trips, tripSet)
+        if (nrow(betterRows) == 0) {
+            return(trips)
+        } else {
+            for (i in 1:nrow(betterRows)) {
+                temp <- bind_rows(trips, betterRows[i,])
+                return(getBalancedTrips(temp, tripSet, thresholds))
+            }
+        }
+    }
+}
+
 # getBalancedTrips <- function(trips, tripSet, thresholds) {
-#     print(nrow(trips))
-#     if (thresholdsMet(trips, thresholds)) {
-#         return(trips)
-#     } else {
-#         betterRows <- getBetterRows(trips, tripSet)
-#         if (nrow(betterRows) == 0) {
-#             return(trips)
-#         } else {
-#             for (i in 1:nrow(betterRows)) {
-#                 temp <- bind_rows(trips, betterRows[i,])
-#                 return(getBalancedTrips(temp, tripSet, thresholds))
-#             }            
-#         }
-#     } 
+#     solution <- FALSE
+#     while (solution == FALSE) {
+#         result <- runTripLoop(trips, tripSet, thresholds)
+#         solution <- result$solution
+#     }
+#     return(result$trips)
 # }
 
-getBalancedTrips <- function(trips, tripSet, thresholds) {
-    solution <- FALSE
-    while (solution == FALSE) {
-        result <- runTripLoop(trips, tripSet, thresholds)
-        solution <- result$solution
-    }
-    return(result$trips)
-}
-
-runTripLoop <- function(trips, tripSet, thresholds) {
-    count <- 0
-    while (! thresholdsMet(trips, thresholds)) {
-        count <- count + 1
-        betterRows <- getBetterRows(trips, tripSet)
-        proportions <- count(trips, trip)
-        if ((nrow(betterRows) == 0) | 
-            (0 %in% proportions$n)  |
-            (count > 50)) {
-            return(list(trips = trips, solution = FALSE))
-        }
-        trip <- betterRows[sample(seq(nrow(betterRows)), 1),]
-        trips <- bind_rows(trips, trip)
-    }
-    print('solution found!')
-    return(list(trips = trips, solution = TRUE))
-}
+# runTripLoop <- function(trips, tripSet, thresholds) {
+#     count <- 0
+#     while (! thresholdsMet(trips, thresholds)) {
+#         count <- count + 1
+#         betterRows <- getBetterRows(trips, tripSet)
+#         proportions <- count(trips, trip)
+#         if ((nrow(betterRows) == 0) | 
+#             (0 %in% proportions$n)  |
+#             (count > 50)) {
+#             return(list(trips = trips, solution = FALSE))
+#         }
+#         trip <- betterRows[sample(seq(nrow(betterRows)), 1),]
+#         trips <- bind_rows(trips, trip)
+#     }
+#     print('solution found!')
+#     return(list(trips = trips, solution = TRUE))
+# }
 
 thresholdsMet <- function(trips, thresholds) {
     diffs <- getDiffs(trips)

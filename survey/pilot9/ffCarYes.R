@@ -6,14 +6,17 @@ source(here::here('survey', 'pilot9', 'defineTrips.R'))
 
 # Get a balanced set of trips by number of legs and trip types
 trips <- getBalancedTrips(trips, trips, thresholds = list(
-    tripType = 4, numLegs = 4)) %>% 
+    tripType = 1, numLegs = 1)) %>% 
     mutate(tripId = row_number())
 
 dim(trips) 
 getDiffs(trips)
 trips %>% count(tripType)
 trips %>% count(numLegs)
-trips %>% count(trip) %>% arrange(desc(n))
+trips %>% 
+    count(trip) %>% 
+    arrange(desc(n)) %>% 
+    as.data.frame()
 
 # Generate full factorial for all attributes except for trips
 ff <- as_tibble(expand.grid(
