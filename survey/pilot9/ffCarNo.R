@@ -9,9 +9,15 @@ trips <- trips %>%
     filter(! carInTrip, ! expressInTrip) 
 
 # Get a balanced set of trips by number of legs and trip types
-trips <- getBalancedTrips(trips, trips) %>% 
+trips <- getBalancedTrips(trips, trips, thresholds = list(
+        tripType = 1, numLegs = 1)) %>% 
     mutate(tripId = row_number())
-    
+
+dim(trips) 
+getDiffs(trips)
+trips %>% count(tripType)
+trips %>% count(numLegs)
+trips %>% count(trip) %>% arrange(desc(n))
 # Generate full factorial for all attributes except for trips
 ff <- as_tibble(expand.grid(
     price         = c(2, 5, 10, 15, 20, 25, 30), # Full trip, USD $
@@ -31,23 +37,16 @@ ff <- expand.grid(
     tripId = trips$tripId) %>% 
     left_join(trips) %>% 
     left_join(ff) %>% 
-    select(-tripId, -ffId)
+    select(-ffId)
     
 # Filter out nonsensical alternatives and add some helpful variables
-FF <- ff %>%
+ff_bal <- ff %>%
     walkSpecificCleaning() %>%
     fixNoneCases() %>%
     addTimeSummary() %>%
     filterCases() %>% 
-    mutate(rowId = row_number())
-
-# Get a balanced set of trips by number of legs and trip types
-trips_bal <- getBalancedTrips(trips, trips) %>% 
-    mutate(tripId = row_number())
-
-# Add rows to balance the FF
-FF_bal <- getBalancedFF(FF, trips_bal)
+    getBalancedFF() # Add repeated rows to balance the FF based on the tripId
 
 # Save result
-saveRDS(FF_bal, here::here(
+saveRDS(ff_bal, here::here(
     'survey', 'pilot9', 'survey', 'doe', 'ff_balanced_no.Rds'))

@@ -94,58 +94,108 @@ filterCases <- function(df) {
 # -----------------------------------------------------------------------------
 # Functions for balancing the full factorial
 
-getBalancedTrips <- function(trips, tripSet) {
-    betterRows <- getBetterRows(trips, tripSet)
-    if (nrow(betterRows) <= 0) {
-        return(trips)
-    } else {
-        for (i in 1:nrow(betterRows)) {
-            temp <- bind_rows(trips, betterRows[i,])
-            return(getBalancedTrips(temp, tripSet))
-        }
+# # Recursive search
+# getBalancedTrips <- function(trips, tripSet, thresholds) {
+#     print(nrow(trips))
+#     if (thresholdsMet(trips, thresholds)) {
+#         return(trips)
+#     } else {
+#         betterRows <- getBetterRows(trips, tripSet)
+#         if (nrow(betterRows) == 0) {
+#             return(trips)
+#         } else {
+#             for (i in 1:nrow(betterRows)) {
+#                 temp <- bind_rows(trips, betterRows[i,])
+#                 return(getBalancedTrips(temp, tripSet, thresholds))
+#             }            
+#         }
+#     } 
+# }
+
+getBalancedTrips <- function(trips, tripSet, thresholds) {
+    solution <- FALSE
+    while (solution == FALSE) {
+        result <- runTripLoop(trips, tripSet, thresholds)
+        solution <- result$solution
     }
+    return(result$trips)
 }
 
-getBetterRows <- function(trips, tripSet) {
-    diffs <- getDiffs(trips)
-    rowIds <- c()
-    for (i in 1:nrow(tripSet)) {
-        trip <- tripSet[i,]
-        temp <- bind_rows(trips, trip)
-        diffs_temp <- getDiffs(temp)
-        if ((diffs_temp$tripType    < diffs$tripType) |
-            (diffs_temp$numLegs < diffs$numLegs)) {
-            rowIds <- c(rowIds, i)
+runTripLoop <- function(trips, tripSet, thresholds) {
+    count <- 0
+    while (! thresholdsMet(trips, thresholds)) {
+        betterRows <- getBetterRows(trips, tripSet)
+        if (nrow(betterRows) == 0) {
+            print('restarting search')
+            return(list(trips = trips, solution = FALSE))
+        }
+        trip <- betterRows[sample(seq(nrow(betterRows)), 1),]
+        trips <- bind_rows(trips, trip)
+        count <- count + 1
+        if (count > 50) {
+            print('restarting search')
+            return(list(trips = trips, solution = FALSE))
         }
     }
-    return(tripSet[rowIds,])
+    print('solution found!')
+    return(list(trips = trips, solution = TRUE))
+}
+
+thresholdsMet <- function(trips, thresholds) {
+    diffs <- getDiffs(trips)
+    if ((diffs$tripType <= thresholds$tripType) &
+        (diffs$numLegs <= thresholds$numLegs)) {
+        return(TRUE)
+    }
+    return(FALSE)
 }
 
 getDiffs <- function(trips) {
-    tripType <- trips %>% 
-        count(tripType) %>% 
+    tripType <- trips %>%
+        count(tripType) %>%
         mutate(diff = max(n) - n)
-    numLegs <- trips %>% 
-        count(numLegs) %>% 
+    numLegs <- trips %>%
+        count(numLegs) %>%
         mutate(diff = max(n) - n)
     diff_tripType <- max(tripType$diff)
     diff_numLegs <- max(numLegs$diff)
     return(list(tripType = diff_tripType, numLegs = diff_numLegs))
 }
 
-getBalancedFF <- function (FF, trips_bal) {
-    proportions <- count(trips, trip)
-    ids <- list()
+getBetterRows <- function(trips, tripSet) {
+    rowIds <- c()
+    for (i in 1:nrow(tripSet)) {
+        temp <- bind_rows(trips, tripSet[i,])
+        if (diffImproved(temp, trips)) {
+            rowIds <- c(rowIds, i)
+        }
+    }
+    return(tripSet[rowIds,])
+}
+
+diffImproved <- function(temp, trips) {
+    diffs <- getDiffs(trips)
+    diffs_temp <- getDiffs(temp)
+    tripType_better <- diffs_temp$tripType < diffs$tripType
+    numLegs_better <- diffs_temp$numLegs < diffs$numLegs
+    if (tripType_better | numLegs_better) {
+        return(TRUE)
+    }
+    return(FALSE)
+}
+
+getBalancedFF <- function (ff) {
+    proportions <- ff %>% 
+        count(tripId) %>% 
+        mutate(diff = max(n) - n)
+    newRows <- list()
     for (i in 1:nrow(proportions)) {
-        ids[[i]] <- which(ff$trip == proportions$trip[i])
+        rowIds <- which(ff$tripId == proportions$tripId[i])
+        sampleIds <- sample(x = rowIds, size = proportions$diff[i], replace = T)
+        newRows[[i]] <- ff[sampleIds,]
     }
-    nAlts <- unlist(map(ids, length))
-    numSamples <- rep(max(nAlts), length(ids)) * proportions$n
-    samples <- list()
-    for (i in 1:length(ids)) {
-        samples[[i]] <- sample(x=ids[[i]], size=numSamples[i], replace=T)
-    }
-    ff_bal <- ff[unlist(samples),] # "bal" is for "balanced"
+    newRows <- do.call(rbind, newRows)
+    ff_bal <- rbind(ff, newRows)
     return(ff_bal)
 }
 
