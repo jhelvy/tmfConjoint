@@ -9,18 +9,10 @@ doe     <- bind_rows(doe_no, doe_yes)
 # Compare balance of modes:
 doe %>%
     group_by(hasCar) %>%
-    mutate(
-        car  = ifelse(carInTrip | expressInTrip, T, F),
-        taxi = ifelse(taxiInTrip, T, F),
-        bus  = busInTrip,
-        walk = walkInTrip
-    ) %>%
-    gather(mode, count, car:walk) %>%
-    count(hasCar, mode, count) %>%
+    count(hasCar, tripType) %>%
     mutate(percent = n / nrow(doe)) %>%
-    filter(count == TRUE) %>%
     ggplot() +
-    geom_bar(aes(x = mode, y = percent), stat='identity') +
+    geom_bar(aes(x = tripType, y = percent), stat='identity') +
     facet_wrap(~hasCar)
 
 # Compare balance of trip legs:
