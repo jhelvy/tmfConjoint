@@ -18,6 +18,7 @@ getDiffs(trips)
 trips %>% count(tripType)
 trips %>% count(numLegs)
 trips %>% count(trip) %>% arrange(desc(n))
+
 # Generate full factorial for all attributes except for trips
 ff <- as_tibble(expand.grid(
     price         = c(2, 5, 10, 15, 20, 25, 30), # Full trip, USD $
