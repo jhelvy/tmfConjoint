@@ -6,15 +6,15 @@ library(janitor)
 library(stringr)
 
 # Load DOE from R
-source(here::here('survey', 'pilot9', 'functions.R'))
+source(here::here('survey', 'pilot10', 'functions.R'))
 doeAll <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'doe.Rds'))
 nResp <- as.numeric(names(doeAll))
 
 # Define functions
 getTempDf <- function(doeAll, size, hasCar = TRUE) {
     does <- doeAll[[as.character(size)]]
-    doe <- does[['yes']] 
+    doe <- does[['yes']]
     if (! hasCar) { doe <- does[['no']] }
     respIDs <- sample(seq(max(doe$respID)), size)
     tempDf <- doe %>% filter(respID %in% respIDs)
@@ -29,9 +29,7 @@ getTempDf <- function(doeAll, size, hasCar = TRUE) {
 
 recodeTempDf <- function(tempDf) {
     tempDf <- dummyCode(tempDf, vars = c(
-        'numLegs', 'trip', 
-        'leg1Mode', 'leg2Mode', 'leg3Mode', 
-        'tripTimeUnc')) %>%
+        'numLegs', 'trip', 'leg1Mode', 'leg2Mode', 'tripTimeUnc')) %>%
         clean_names('lower_camel')
     # Convert the data to "mlogit" format:
     tempDf = mlogit.data(
@@ -76,7 +74,7 @@ for (i in 1:length(nResp)) {
     # Run the model:
     models[[i]] = mlogit(tempDf,
         formula = choice ~
-            price + expressFee + 
+            price + expressFee +
             leg1Time + leg2Time + leg3Time +
             transfer1Time + transfer2Time + transfer3Time +
             tripTimeUnc0_1 + tripTimeUnc0_2 +
@@ -84,8 +82,8 @@ for (i in 1:length(nResp)) {
 }
 
 # Save results
-saveRDS(models, 
-    here::here('survey', 'pilot9', 'survey', 'samplesize', 'models', 
+saveRDS(models,
+    here::here('survey', 'pilot10', 'survey', 'samplesize', 'models',
                'baseline.Rds'))
 
 # ---------------------------------------------------------------------------
@@ -101,7 +99,7 @@ for (i in 1:length(nResp)) {
     # Run the model:
     models[[i]] = mlogit(tempDf,
         formula = choice ~
-        price + expressFee + 
+        price + expressFee +
         leg1Time + leg2Time + leg3Time +
         transfer1Time + transfer2Time + transfer3Time +
         tripTimeUnc0_1 + tripTimeUnc0_2 +
@@ -109,14 +107,14 @@ for (i in 1:length(nResp)) {
 }
 
 # Save results
-saveRDS(models, 
-        here::here('survey', 'pilot9', 'survey', 'samplesize', 'models', 
+saveRDS(models,
+        here::here('survey', 'pilot10', 'survey', 'samplesize', 'models',
                    'interaction.Rds'))
 
 # ---------------------------------------------------------------------------
 # Mixed logit model
-# 
-#     models[[i]] = mlogit(tempDf, 
+#
+#     models[[i]] = mlogit(tempDf,
 #         formula = choice ~
 #             amount +
 #             incentive_tax_deduction + incentive_sales_tax_exemption +
@@ -138,7 +136,7 @@ saveRDS(models,
 # Plot results
 
 baseline <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'samplesize', 'models', 
+    'survey', 'pilot10', 'survey', 'samplesize', 'models',
     'baseline.Rds')) %>%
     getSE() %>%
     formatSE()
@@ -158,7 +156,7 @@ baseline_plot <- ggplot(baseline, aes(x = size, y = se)) +
 #     facet_wrap(~model, nrow = 1) +
 #     theme_bw()
 
-ggsave(here::here('survey', 'pilot9', 'survey', 'samplesize', 'plots', 
+ggsave(here::here('survey', 'pilot10', 'survey', 'samplesize', 'plots',
                   'baseline.pdf'),
        baseline_plot, width = 5, height = 3)
 

@@ -1,8 +1,8 @@
-source(here::here('survey', 'pilot9', 'functions.R'))
+source(here::here('survey', 'pilot10', 'functions.R'))
 
 # Read in DOEs
 doe_all <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'doe.Rds'))
 doe     <- doe_all$`6000`
 doeNo  <- doe$no %>% mutate(hasCar = 'no')
 doeYes <- doe$yes %>% mutate(hasCar = 'yes')

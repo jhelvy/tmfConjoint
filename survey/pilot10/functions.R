@@ -6,31 +6,25 @@ library(data.table)
 options(dplyr.width = Inf) # Option to preview all columns in a data frame
 
 # -----------------------------------------------------------------------------
-# Functions for making the full factorial 
+# Functions for making the full factorial
 
 walkSpecificCleaning <- function(df) {
     temp <- df %>%
     mutate(
         # If walking, then no transfer time
         transfer1Time = ifelse(leg1Mode == walk, 0, transfer1Time),
-        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time),
-        transfer3Time = ifelse(leg3Mode == walk, 0, transfer3Time)) %>%
+        transfer2Time = ifelse(leg2Mode == walk, 0, transfer2Time)) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
 }
 
-# If leg2Mode is "None", then leg3Mode also must be "None",
-# and the leg times and wait times should be 0
+# If leg 2 is None, then the leg times and transfer times are 0
 fixNoneCases <- function(df) {
     temp <- df %>%
     mutate(
-        leg3Mode = ifelse(leg2Mode == none, none, as.character(leg3Mode)),
-        # If leg 2 or 3 are None, then the leg times and transfer times are 0
         leg2Time = ifelse(leg2Mode == none, 0, leg2Time),
-        leg3Time = ifelse(leg3Mode == none, 0, leg3Time),
-        transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time),
-        transfer3Time = ifelse(leg3Mode == none, 0, transfer3Time)) %>%
+        transfer2Time = ifelse(leg2Mode == none, 0, transfer2Time)) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
@@ -58,8 +52,8 @@ carSpecificCleaning <- function(df) {
 addTimeSummary <- function(df) {
     # Generate some useful summary variables
     temp <- df %>% mutate(
-        totalLegTime  = leg1Time + leg2Time + leg3Time,
-        totalWaitTime = transfer1Time + transfer2Time + transfer3Time,
+        totalLegTime  = leg1Time + leg2Time,
+        totalWaitTime = transfer1Time + transfer2Time,
         totalTripTime = totalLegTime + totalWaitTime,
         tripTimeMax   = ceiling(totalTripTime*(1 + tripTimeUnc)),
         tripTimeRange = paste(totalTripTime, '-', tripTimeMax, 'minutes',
@@ -84,8 +78,7 @@ filterCases <- function(df) {
             ! ((leg1Mode == taxi) & (leg1Time > 30)),
             # Maximum walking time is 15 minutes
             ! ((leg1Mode == walk) & (leg1Time > 15)),
-            ! ((leg2Mode == walk) & (leg2Time > 15)),
-            ! ((leg3Mode == walk) & (leg3Time > 15))) %>%
+            ! ((leg2Mode == walk) & (leg2Time > 15))) %>%
     # Remove duplicates that may now be remaining
     distinct()
     return(temp)
@@ -111,33 +104,6 @@ getBalancedTrips <- function(trips, tripSet, thresholds) {
         }
     }
 }
-
-# getBalancedTrips <- function(trips, tripSet, thresholds) {
-#     solution <- FALSE
-#     while (solution == FALSE) {
-#         result <- runTripLoop(trips, tripSet, thresholds)
-#         solution <- result$solution
-#     }
-#     return(result$trips)
-# }
-
-# runTripLoop <- function(trips, tripSet, thresholds) {
-#     count <- 0
-#     while (! thresholdsMet(trips, thresholds)) {
-#         count <- count + 1
-#         betterRows <- getBetterRows(trips, tripSet)
-#         proportions <- count(trips, trip)
-#         if ((nrow(betterRows) == 0) | 
-#             (0 %in% proportions$n)  |
-#             (count > 50)) {
-#             return(list(trips = trips, solution = FALSE))
-#         }
-#         trip <- betterRows[sample(seq(nrow(betterRows)), 1),]
-#         trips <- bind_rows(trips, trip)
-#     }
-#     print('solution found!')
-#     return(list(trips = trips, solution = TRUE))
-# }
 
 thresholdsMet <- function(trips, thresholds) {
     diffs <- getDiffs(trips)
@@ -183,8 +149,8 @@ diffImproved <- function(temp, trips) {
 }
 
 getBalancedFF <- function (ff) {
-    proportions <- ff %>% 
-        count(tripId) %>% 
+    proportions <- ff %>%
+        count(tripId) %>%
         mutate(diff = max(n) - n)
     newRows <- list()
     for (i in 1:nrow(proportions)) {
@@ -203,13 +169,13 @@ getBalancedFF <- function (ff) {
 removeDoubleAlts <- function(doe, nAltsPerQ, nQPerResp) {
     doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
     doe <- getUniqueAltCounts(doe)
-    doubleRows <- which(doe$numUnique != 3)
+    doubleRows <- which(doe$numUnique != nAltsPerQ)
     while (length(doubleRows) != 0) {
         newRows <- sample(x=seq(nrow(doe)), size=length(doubleRows), replace=F)
         doe[doubleRows,] <- doe[newRows,]
         doe <- addMetaData(doe, nAltsPerQ, nQPerResp)
         doe <- getUniqueAltCounts(doe)
-        doubleRows <- which(doe$numUnique != 3)
+        doubleRows <- which(doe$numUnique != nAltsPerQ)
     }
     doe <- doe %>% select(-tripID, -numUnique)
     return(doe)
@@ -228,8 +194,8 @@ addMetaData <- function(doe, nAltsPerQ, nQPerResp) {
 getUniqueAltCounts <- function(doe) {
     temp <- doe %>%
         mutate(distinctTrip = paste(
-            leg1Mode, leg2Mode, leg3Mode, leg1Time, leg2Time, leg3Time,
-            transfer1Time, transfer2Time, transfer3Time, sep='|'))
+            leg1Mode, leg2Mode, leg1Time, leg2Time,
+            transfer1Time, transfer2Time, sep='|'))
     uniqueTrips <- unique(temp$distinctTrip)
     tripsDf <- data.frame(
         distinctTrip = uniqueTrips,
@@ -247,7 +213,7 @@ getUniqueAltCounts <- function(doe) {
 # Functions for making the tripDfs
 
 addLegTimes <- function(trip, row) {
-    legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
+    legTimes <- row[c('leg1Time', 'leg2Time')]
     legTimes <- legTimes[1:row$numLegs]
     time_i <- seq(length(legTimes))
     trip_i <- 2*time_i
@@ -259,7 +225,7 @@ addLegTimes <- function(trip, row) {
 }
 
 addTransferTimes <- function(trip, row) {
-    transferTimes <- row[c('transfer1Time', 'transfer2Time', 'transfer3Time')]
+    transferTimes <- row[c('transfer1Time', 'transfer2Time')]
     transferTimes <- transferTimes[1:row$numLegs]
     time_i <- seq(length(transferTimes))
     trip_i <- 2*time_i - 1
@@ -298,7 +264,7 @@ getPlotLineNodes <- function(tripDf) {
 }
 
 getYSpacing <- function(trip, row) {
-    legTimes <- row[c('leg1Time', 'leg2Time', 'leg3Time')]
+    legTimes <- row[c('leg1Time', 'leg2Time')]
     legTimes <- legTimes[1:row$numLegs]
     breaks  = cumsum(c(0, -1 * legTimes / sum(legTimes)))
     if (abs(breaks[2]) < 0.12) {

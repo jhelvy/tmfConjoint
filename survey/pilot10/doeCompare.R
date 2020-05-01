@@ -1,5 +1,5 @@
 doe_all <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'doe.Rds'))
 
 doe     <- doe_all$`6000`
 doe_no  <- doe$no %>% mutate(hasCar = 'no')

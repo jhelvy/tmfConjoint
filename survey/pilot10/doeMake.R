@@ -1,10 +1,10 @@
-source(here::here('survey', 'pilot9', 'functions.R'))
+source(here::here('survey', 'pilot10', 'functions.R'))
 
 # Read in balanced full factorial
 FF_bal_no <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'ff_balanced_no.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'ff_balanced_no.Rds'))
 FF_bal_yes <- readRDS(here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'ff_balanced_yes.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'ff_balanced_yes.Rds'))
 
 # Set number of respondents and respondent question
 nResp     <- seq(500, 10000, 500) # Number of respondents
@@ -29,4 +29,4 @@ for (i in 1:length(nResp)) {
 
 # Save does
 names(doe) <- nResp
-saveRDS(doe, here::here('survey', 'pilot9', 'survey', 'doe', 'doe.Rds'))
+saveRDS(doe, here::here('survey', 'pilot10', 'survey', 'doe', 'doe.Rds'))

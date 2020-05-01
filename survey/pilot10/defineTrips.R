@@ -20,8 +20,8 @@ none    = 'None'
 # 2 LEG TRIPS
 # Car         -> Bus
 # Car express -> Bus
-# Car         -> Walk
-# Car express -> Walk
+# Car         -> Walk       # NO, you'd just drive the whole way
+# Car express -> Walk       # NO, you'd just drive the whole way
 # Car         -> Uber/Taxi  # NO, you're already driving
 # Car express -> Uber/Taxi  # NO, you're already driving
 # Bus         -> Bus
@@ -29,32 +29,10 @@ none    = 'None'
 # Uber/Taxi   -> Bus
 # Bus         -> Walk
 # Walk        -> Walk       # NO, you're already walking
-# Uber/Taxi   -> Walk
+# Uber/Taxi   -> Walk       # NO, you'd just taxi the whole way
 # Bus         -> Uber/Taxi
 # Walk        -> Uber/Taxi  # NO, you would just taxi from the start
 # Uber/Taxi   -> Uber/Taxi  # NO, you're already in a taxi
-
-# 3 LEG TRIPS
-# Bus       -> Bus       -> Bus
-# Walk      -> Bus       -> Bus
-# Uber/Taxi -> Bus       -> Bus        # NO, you would taxi to the 2nd bus stop
-# Bus       -> Walk      -> Bus
-# Uber/Taxi -> Walk      -> Bus        # NO, you would uber to the bus stop
-# Bus       -> Uber/Taxi -> Bus        # NO, you would taxi to the end
-# Bus       -> Bus       -> Walk
-# Walk      -> Bus       -> Walk
-# Uber/Taxi -> Bus       -> Walk
-# Bus       -> Walk      -> Walk       # NO, you're already walking
-# Uber/Taxi -> Walk      -> Walk       # NO, you're already walking
-# Bus       -> Uber/Taxi -> Walk       # NO, you would taxi to the end
-# Bus       -> Bus       -> Uber/Taxi  # NO, you would taxi from the next stop
-# Walk      -> Bus       -> Uber/Taxi
-# Uber/Taxi -> Bus       -> Uber/Taxi  # NO, you would taxi to the end
-# Bus       -> Walk      -> Uber/Taxi
-# Uber/Taxi -> Walk      -> Uber/Taxi  # NO, you would taxi to the end
-# Bus       -> Uber/Taxi -> Uber/Taxi  # NO, you're already in a taxi
-
-# NO to all 3-leg car trips - you would just drive to the end
 
 goodTrips <- tribble(
     ~trip,                             ~tripType,
@@ -66,41 +44,22 @@ goodTrips <- tribble(
     # 2 LEG TRIPS
     paste(car, bus, sep = '|'),         'car-bus',
     paste(express, bus, sep = '|'),     'car-bus',
-    paste(car, walk, sep = '|'),        'car',
-    paste(express, walk, sep = '|'),    'car',
     paste(bus, bus, sep = '|'),         'bus', 
     paste(walk, bus, sep = '|'),        'bus', 
     paste(taxi, bus, sep = '|'),        'taxi-bus', 
     paste(bus, walk, sep = '|'),        'bus',
-    paste(taxi, walk, sep = '|'),       'taxi',
-    paste(bus, taxi, sep = '|'),        'taxi-bus', 
-    # 3 LEG TRIPS
-    paste(bus, bus, bus, sep = '|'),    'bus',
-    paste(walk, bus, bus, sep = '|'),   'bus',
-    paste(bus, walk, bus, sep = '|'),   'bus',
-    paste(bus, bus, walk, sep = '|'),   'bus',
-    paste(walk, bus, walk, sep = '|'),  'bus',
-    paste(taxi, bus, walk, sep = '|'),  'taxi-bus',
-    paste(walk, bus, taxi, sep = '|'),  'taxi-bus',
-    paste(bus, walk, taxi, sep = '|'),  'taxi-bus')
+    paste(bus, taxi, sep = '|'),        'taxi-bus')
 
 trips <- expand.grid(
     leg1Mode = c(taxi, bus, walk, car, express),
-    leg2Mode = c(none, taxi, bus, walk),
-    leg3Mode = c(none, taxi, bus, walk)) %>% 
+    leg2Mode = c(none, taxi, bus, walk)) %>% 
     mutate(
-        numLegs = ifelse(
-            leg2Mode == none, 1, ifelse(
-            leg3Mode == none, 2, 3)),
-        leg3Mode = ifelse(
-            numLegs %in% c(1, 2), none, as.character(leg3Mode)),
+        numLegs = ifelse(leg2Mode == none, 1, 2),
+        leg2Mode = ifelse(numLegs == 1, none, as.character(leg2Mode)),
         lastLegMode = ifelse(
-            numLegs == 1, as.character(leg1Mode), ifelse(
-            numLegs == 2, as.character(leg2Mode), as.character(leg3Mode))),
+            numLegs == 1, as.character(leg1Mode), as.character(leg2Mode)),
         trip = ifelse(
-            numLegs == 1, paste(leg1Mode), ifelse(
-            numLegs == 2, paste(leg1Mode, leg2Mode, sep='|'),
-            paste(leg1Mode, leg2Mode, leg3Mode, sep='|'))),
+            numLegs == 1, paste(leg1Mode), paste(leg1Mode, leg2Mode, sep='|')),
         carInTrip     = str_detect(trip, car),
         expressInTrip = str_detect(trip, express),
         walkInTrip    = str_detect(trip, walk),

@@ -1,8 +1,8 @@
 # Main full factorial DOE construction
 # randomized, stratified by number of trips and modes
 
-source(here::here('survey', 'pilot9', 'functions.R'))
-source(here::here('survey', 'pilot9', 'defineTrips.R'))
+source(here::here('survey', 'pilot10', 'functions.R'))
+source(here::here('survey', 'pilot10', 'defineTrips.R'))
 
 # No cars for this doe
 trips <- trips %>% 
@@ -25,10 +25,8 @@ ff <- as_tibble(expand.grid(
     price         = c(2, 5, 10, 15, 20, 25, 30), # Full trip, USD $
     leg1Time      = c(10, 15, 20, 25, 30), # Minutes
     leg2Time      = c(10, 15, 20), # Minutes
-    leg3Time      = c(10, 15, 20), # Minutes
     transfer1Time = c(2, 5, 10), # Minutes
     transfer2Time = c(2, 5, 10), # Minutes
-    transfer3Time = c(2, 5, 10), # Minutes
     tripTimeUnc   = c(0.05, 0.10, 0.20)) # Plus/minus % of total trip time
 ) %>% 
     mutate(ffId = row_number())
@@ -51,4 +49,4 @@ ff_bal <- ff %>%
 
 # Save result
 saveRDS(ff_bal, here::here(
-    'survey', 'pilot9', 'survey', 'doe', 'ff_balanced_no.Rds'))
+    'survey', 'pilot10', 'survey', 'doe', 'ff_balanced_no.Rds'))
