@@ -29,8 +29,17 @@ getTempDf <- function(doeAll, size, hasCar = TRUE) {
 
 recodeTempDf <- function(tempDf) {
     tempDf <- dummyCode(tempDf, vars = c(
-        'numLegs', 'trip', 'leg1Mode', 'leg2Mode', 'tripTimeUnc')) %>%
-        clean_names('lower_camel')
+        'numLegs', 'leg1Mode', 'leg2Mode', 'tripTimeUnc')) %>%
+        clean_names('lower_camel') %>% 
+        mutate(
+            intTime1Car = leg1ModeCar*leg1Time, 
+            intTime1CarExpress = leg1ModeCarExpress*leg1Time, 
+            intTime1Taxi = leg1ModeUberTaxi*leg1Time, 
+            intTime1Bus = leg1ModeBus*leg1Time, 
+            intTime2Walk = leg2ModeWalk*leg2Time, 
+            intTime2Taxi = leg2ModeUberTaxi*leg2Time, 
+            intTime2Bus = leg2ModeBus*leg2Time
+        )
     # Convert the data to "mlogit" format:
     tempDf = mlogit.data(
         data    = tempDf,
@@ -41,75 +50,59 @@ recodeTempDf <- function(tempDf) {
 }
 
 # Get the standard errors out of the models
-getSE <- function(models) {
-    coefs1 <- coef(models[[1]])
-    se <- as.data.frame(matrix(0, ncol=length(coefs1) + 1, nrow=length(nResp)))
-    colnames(se) <- c('size', names(coefs1))
-    for (i in 1:length(models)) {
-        model <- models[[i]]
-        size <- nrow(model$gradient) / 6
-        se_vals <- sqrt(abs(diag(solve(model$hessian))))
-        se[i, ] <- c(size, se_vals)
-    }
+getSE <- function(model, size) {
+    se <- data.frame(
+        size = nrow(model$gradient) / 6,
+        se   = sqrt(abs(diag(solve(model$hessian)))))
+    se$coef = row.names(se)
+    row.names(se) <- NULL
     return(se)
 }
 
-formatSE <- function(df) {
-    return(
-        df %>%
-            gather(coef, se, -c(size))
-    )
-}
-
 # ---------------------------------------------------------------------------
-# Baseline model
+# Run models
 
 # Run models for different sample sizes
 index <- 1
-models <- list()
+baseline <- list()
+interaction <- list()
 for (i in 1:length(nResp)) {
     size <- nResp[i]
     tempDf <- getTempDf(doeAll, size, hasCar = TRUE)
     tempDf <- recodeTempDf(tempDf)
-    # Run the model:
-    models[[i]] = mlogit(tempDf,
-        formula = choice ~
-            price + expressFee +
-            leg1Time + leg2Time + leg3Time +
-            transfer1Time + transfer2Time + transfer3Time +
-            tripTimeUnc0_1 + tripTimeUnc0_2 +
-            trip | 0)
-}
-
-# Save results
-saveRDS(models,
-    here::here('survey', 'pilot10', 'survey', 'samplesize', 'models',
-               'baseline.Rds'))
-
-# ---------------------------------------------------------------------------
-# Interaction model
-
-# Run models for different sample sizes
-index <- 1
-models <- list()
-for (i in 1:length(nResp)) {
-    size <- nResp[i]
-    tempDf <- getTempDf(doeAll, size, hasCar = TRUE)
-    tempDf <- recodeTempDf(tempDf)
-    # Run the model:
-    models[[i]] = mlogit(tempDf,
-        formula = choice ~
+    # Run the baseline model:
+    model_baseline <- mlogit(tempDf, formula = choice ~
         price + expressFee +
-        leg1Time + leg2Time + leg3Time +
-        transfer1Time + transfer2Time + transfer3Time +
-        tripTimeUnc0_1 + tripTimeUnc0_2 +
-        trip + time*totalTripTime | 0)
+        leg1ModeCar + leg1ModeCarExpress + leg1ModeUberTaxi + leg1ModeBus + 
+        leg2ModeWalk + leg2ModeUberTaxi + leg2ModeBus +
+        leg1Time + leg2Time + 
+        transfer1Time + transfer2Time + 
+        tripTimeUnc0_1 + tripTimeUnc0_2 | 0)
+    # Run the interaction model:
+    model_interaction <- mlogit(tempDf, formula = choice ~
+        price + expressFee +
+        leg1ModeCar + leg1ModeCarExpress + leg1ModeUberTaxi + leg1ModeBus + 
+        leg2ModeWalk + leg2ModeUberTaxi + leg2ModeBus +
+        leg1Time + leg2Time + 
+        transfer1Time + transfer2Time + 
+        tripTimeUnc0_1 + tripTimeUnc0_2 + 
+        intTime1Car +
+        intTime1CarExpress +
+        intTime1Taxi +
+        intTime1Bus +
+        intTime2Walk +
+        intTime2Taxi | 0)
+    baseline[[i]] <- getSE(model_baseline)
+    interaction[[i]] <- getSE(model_interaction)
 }
 
 # Save results
-saveRDS(models,
-        here::here('survey', 'pilot10', 'survey', 'samplesize', 'models',
-                   'interaction.Rds'))
+baseline <- do.call(rbind, baseline)
+interaction <- do.call(rbind, interaction)
+write_csv(baseline, here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'models', 'baseline.csv'))
+write_csv(interaction, here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'models', 'interaction.csv'))
 
 # ---------------------------------------------------------------------------
 # Mixed logit model
@@ -135,28 +128,38 @@ saveRDS(models,
 # ---------------------------------------------------------------------------
 # Plot results
 
-baseline <- readRDS(here::here(
+baseline <- read_csv(here::here(
     'survey', 'pilot10', 'survey', 'samplesize', 'models',
-    'baseline.Rds')) %>%
-    getSE() %>%
-    formatSE()
+    'baseline.csv')) 
+
+interaction <- read_csv(here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'models',
+    'interaction.csv')) 
 
 baseline_plot <- ggplot(baseline, aes(x = size, y = se)) +
     geom_point(size = 2, alpha = 0.2) +
+    scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+    scale_x_continuous(breaks = nResp) +
+    theme_minimal_hgrid()
+
+interaction_plot <- ggplot(interaction, aes(x = size, y = se)) +
+    geom_point(size = 2, alpha = 0.2) +
+    scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+    scale_x_continuous(breaks = nResp) +
+    theme_minimal_hgrid()
+
+comparison <- bind_rows(
+    mutate(baseline, model = 'baseline'),
+    mutate(interaction, model = 'interaction')) %>%
+    ggplot(aes(x = size, y = se)) +
+    geom_point() +
+    facet_wrap(~model, nrow = 1) +
     theme_bw()
 
+ggsave(here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'plots', 'baseline.pdf'),
+    baseline_plot, width = 5, height = 3)
 
-# comparison <- bind_rows(
-#     mutate(baseline, model = 'baseline'),
-#     mutate(linear_price, model = 'linear_price'),
-#     mutate(interaction, model = 'interaction'),
-#     mutate(mixed, model = 'mixed')) %>%
-#     ggplot(aes(x = size, y = se, color = category)) +
-#     geom_point() +
-#     facet_wrap(~model, nrow = 1) +
-#     theme_bw()
-
-ggsave(here::here('survey', 'pilot10', 'survey', 'samplesize', 'plots',
-                  'baseline.pdf'),
-       baseline_plot, width = 5, height = 3)
-
+ggsave(here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'plots', 'interaction.pdf'),
+    interaction_plot, width = 5, height = 3)

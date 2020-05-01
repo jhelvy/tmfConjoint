@@ -7,7 +7,7 @@ FF_bal_yes <- readRDS(here::here(
     'survey', 'pilot10', 'survey', 'doe', 'ff_balanced_yes.Rds'))
 
 # Set number of respondents and respondent question
-nResp     <- seq(500, 10000, 500) # Number of respondents
+nResp     <- seq(1000, 10000, 1000) # Number of respondents
 nAltsPerQ <- 3 # Number of alternatives per question
 nQPerResp <- 6 # Number of questions per respondent
 
