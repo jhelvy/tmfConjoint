@@ -12,10 +12,12 @@ doeAll <- readRDS(here::here(
 nResp <- as.numeric(names(doeAll))
 
 # Define functions
-getTempDf <- function(doeAll, size, hasCar = TRUE) {
+getTempDf <- function(doeAll, size) {
     does <- doeAll[[as.character(size)]]
-    doe <- does[['yes']]
-    if (! hasCar) { doe <- does[['no']] }
+    doe_yes <- sample_frac(does[['yes']], 0.5)
+    doe_no  <- sample_frac(does[['no']], 0.5)
+    doe <- bind_rows(doe_yes, doe_no)
+    doe <- addMetaData(doe, max(doe$altID), max(doe$qID))
     respIDs <- sample(seq(max(doe$respID)), size)
     tempDf <- doe %>% filter(respID %in% respIDs)
     numAlts <- max(tempDf$altID)
@@ -126,24 +128,38 @@ write_csv(interaction, here::here(
 #         R = 100, halton = NA)
 
 # ---------------------------------------------------------------------------
+
 # Plot results
+
+formatSE <- function(df) {
+    df <- df %>% 
+        mutate(category = case_when(
+            coef %in% c('price', 'expressFee') ~ 'price', 
+            str_detect(coef, 'Mode')           ~ 'mode',
+            str_detect(coef, 'Time')           ~ 'time',
+            TRUE                               ~ 'other',
+        ))
+    return(df)
+}
 
 baseline <- read_csv(here::here(
     'survey', 'pilot10', 'survey', 'samplesize', 'models',
-    'baseline.csv')) 
+    'baseline.csv')) %>% 
+    formatSE()
 
 interaction <- read_csv(here::here(
     'survey', 'pilot10', 'survey', 'samplesize', 'models',
-    'interaction.csv')) 
+    'interaction.csv')) %>% 
+    formatSE()
 
-baseline_plot <- ggplot(baseline, aes(x = size, y = se)) +
-    geom_point(size = 2, alpha = 0.2) +
+baseline_plot <- ggplot(baseline, aes(x = size, y = se, color = category)) +
+    geom_point(size = 1, alpha = 0.5) +
     scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
     scale_x_continuous(breaks = nResp) +
     theme_minimal_hgrid()
 
-interaction_plot <- ggplot(interaction, aes(x = size, y = se)) +
-    geom_point(size = 2, alpha = 0.2) +
+interaction_plot <- ggplot(interaction, aes(x = size, y = se, color = category)) +
+    geom_point(size = 1, alpha = 0.5) +
     scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
     scale_x_continuous(breaks = nResp) +
     theme_minimal_hgrid()
@@ -151,8 +167,8 @@ interaction_plot <- ggplot(interaction, aes(x = size, y = se)) +
 comparison <- bind_rows(
     mutate(baseline, model = 'baseline'),
     mutate(interaction, model = 'interaction')) %>%
-    ggplot(aes(x = size, y = se)) +
-    geom_point() +
+    ggplot(aes(x = size, y = se, color = category)) +
+    geom_point(alpha = 0.5, size = 1) +
     facet_wrap(~model, nrow = 1) +
     theme_bw()
 
@@ -163,3 +179,7 @@ ggsave(here::here(
 ggsave(here::here(
     'survey', 'pilot10', 'survey', 'samplesize', 'plots', 'interaction.pdf'),
     interaction_plot, width = 5, height = 3)
+
+ggsave(here::here(
+    'survey', 'pilot10', 'survey', 'samplesize', 'plots', 'comparison.pdf'),
+    comparison, width = 7, height = 3)
